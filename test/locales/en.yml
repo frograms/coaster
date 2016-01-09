@@ -1,0 +1,12 @@
+en:
+  class:
+    Coaster:
+      self: 'Coaster Translated'
+      SampleObject:
+        self: 'Coaster SampleObject Translated'
+        title: 'Coaster SampleObject Title'
+      TestStandardError:
+        SampleError:
+          test: 'Test this translation'
+  sample:
+    title: 'Sample Title'
