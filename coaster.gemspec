@@ -11,20 +11,22 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/frograms/coaster'
   s.authors = ['buzz jung']
   s.email = 'buzz@frograms.com'
+  s.licenses = ['MIT']
 
-  s.files = Dir['**/*'].select{|f| File.file?(f)}
+  s.files = Dir['{app,config,db,lib}/**/*'] + %w(LICENSE Rakefile README.md)
+  s.test_files = Dir['test/**/*']
   s.require_path = %w{lib}
 
-  s.add_dependency 'i18n'
-  s.add_dependency 'rake'
-  s.add_dependency 'activesupport'
+  s.add_dependency 'i18n', '~> 0.6'
+  s.add_dependency 'rake', '~> 10.0'
+  s.add_dependency 'activesupport', '~> 3.0'
 
-  s.add_development_dependency 'bundler'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'pry-stack_explorer'
-  s.add_development_dependency 'pry-byebug'
-  s.add_development_dependency 'minitest'
-  s.add_development_dependency 'mocha'
-  s.add_development_dependency 'shoulda'
-  s.add_development_dependency 'shoulda-context'
+  s.add_development_dependency 'bundler', '~> 1.0'
+  s.add_development_dependency 'pry', '~> 0.8'
+  s.add_development_dependency 'pry-stack_explorer', '~> 0.4'
+  s.add_development_dependency 'pry-byebug', '~> 3.0'
+  s.add_development_dependency 'minitest', '~> 5.0'
+  s.add_development_dependency 'mocha', '~> 1.0'
+  s.add_development_dependency 'shoulda', '~> 3.0'
+  s.add_development_dependency 'shoulda-context', '~> 1.0'
 end

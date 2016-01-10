@@ -1,6 +1,5 @@
 require 'test_helper'
 require 'minitest/autorun'
-require 'active_support/core_ext/hash/indifferent_access'
 
 module Coaster
 
