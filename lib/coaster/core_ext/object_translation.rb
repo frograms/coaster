@@ -40,7 +40,7 @@ class Object
         end
 
         if key_class.superclass == Object || key_class == Object
-          options[:message] || options['message'] ||
+          options[:description] ||
          (options[:original_missing] && options[:original_missing].message) ||
           result.message
         else
@@ -66,9 +66,11 @@ class Object
     options = args.last.is_a?(Hash) ? args.pop.dup : {}
     key = args.shift || (respond_to?(:tkey) ? tkey : nil)
 
-    if !key.is_a?(String) && key != :force
-      if respond_to?(:message) && message.present? && message != 'false' && message != self.class.name
-        return message
+    if respond_to?(:description) && description.present? && description != 'false' && description != self.class.name
+      if !key.is_a?(String) && key != :force
+        return description
+      else
+        options.merge!(description: description)
       end
     end
 
