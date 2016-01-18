@@ -4,14 +4,32 @@ class StandardError
   alias_method :initialize_original, :initialize
   def initialize(message = nil, cause = $!)
     initialize_original(message, cause)
-    @raven = attributes.delete(:raven) || {}
+    @raven = (attributes.delete(:raven) || {}).with_indifferent_access
+    @raven[:fingerprint] ||= attributes[:fingerprint] || [:default]
+  end
+
+  def fingerprint=(*fp)
+    raven[:fingerprint] = fp
+  end
+
+  def fingerprint
+    raven[:fingerprint]
   end
 
   def capture(options = {})
     notes = raven.merge(options || {})
 
-    self.tags += Array(notes[:fingerprint])
-    notes[:fingerprint] = self.tags
+    notes[:fingerprint] = notes[:fingerprint].flatten.map do |fp|
+      if fp == true || fp == :class
+        self.class.name
+      elsif fp == :default
+        '{{ default }}'
+      else
+        fp
+      end
+    end
+    notes[:tags] ||= {}
+    notes[:tags] = notes[:tags].merge(environment: Rails.env) if defined?(Rails)
     notes[:level] ||= self.level
     notes[:extra] = (notes[:extra] || {}).merge(attributes)
 

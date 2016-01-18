@@ -76,6 +76,10 @@ class StandardError
     attributes[:http_status] || self.class.http_status
   end
 
+  def code
+    attributes[:code] || http_status
+  end
+
   def description
     attributes[:description] || attributes[:desc] || message
   end
