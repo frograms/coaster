@@ -80,8 +80,10 @@ class StandardError
     attributes[:code] || http_status
   end
 
+  # description is user friendly messages, do not use error's message
+  # error message is not user friendly in many cases.
   def description
-    attributes[:description] || attributes[:desc] || message
+    attributes[:description] || attributes[:desc]
   end
   alias_method :desc, :description
 
