@@ -27,6 +27,13 @@ module Coaster
       assert_equal 'translation missing: en.class.Coaster.NotTranslated.self', NotTranslated._translate
     end
 
+    def test_raise_translation_missing
+      exception = catch(:exception) do
+        NotTranslated._translate(throw: true)
+      end
+      assert_equal(I18n::MissingTranslation, exception.class)
+    end
+
     def test_translation_sub
       assert_equal 'Coaster SampleObject Title', SampleObject._translate('.title')
       assert_equal 'Coaster SampleObject Title', SampleObject._translate(:title)

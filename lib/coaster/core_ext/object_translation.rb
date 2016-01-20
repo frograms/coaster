@@ -28,6 +28,9 @@ class Object
       key = key_class.name.gsub(/::/, '.')
       key = 'class.' + key + subkey
 
+      unless options.key?(:original_throw)
+        options[:original_throw] = options.delete(:throw)
+      end
       options.merge!(throw: true)
       result = catch(:exception) do
         I18n.t(key, *args, options)
@@ -40,7 +43,8 @@ class Object
         end
 
         if key_class.superclass == Object || key_class == Object
-          options[:description] ||
+          return options[:description] if options[:description].present?
+          throw :exception, result if options[:original_throw]
          (options[:original_missing] && options[:original_missing].message) ||
           result.message
         else
