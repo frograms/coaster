@@ -47,14 +47,14 @@ class Object
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
           msg = missing.message
-          msg.instance_variables_set(:@missing, missing)
+          msg.instance_variable_set(:@missing, missing)
           msg
         else
           options[:class] = key_class.superclass
           _translate(subkey, *args, options)
         end
       else
-        result.instance_variables_set(:@translated, true)
+        result.instance_variable_set(:@translated, true)
         result
       end
     end
