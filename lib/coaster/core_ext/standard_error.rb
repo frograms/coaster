@@ -83,7 +83,11 @@ class StandardError
   # description is user friendly messages, do not use error's message
   # error message is not user friendly in many cases.
   def description
-    attributes[:description] || attributes[:desc] || message
+    dsc = attributes[:description] || attributes[:desc]
+    return dsc if dsc
+    msg = message.dup
+    msg.instance_variable_set(:@raw, true)
+    msg
   end
   alias_method :desc, :description
 
