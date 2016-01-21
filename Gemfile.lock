@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coaster (0.0.5)
+    coaster (0.0.6)
       activesupport (~> 3.0)
       i18n (~> 0.6)
       rake (~> 10.0)
@@ -58,4 +58,4 @@ DEPENDENCIES
   shoulda-context (~> 1.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

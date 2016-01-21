@@ -83,7 +83,7 @@ class StandardError
   # description is user friendly messages, do not use error's message
   # error message is not user friendly in many cases.
   def description
-    attributes[:description] || attributes[:desc]
+    attributes[:description] || attributes[:desc] || message
   end
   alias_method :desc, :description
 
