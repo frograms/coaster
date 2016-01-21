@@ -45,8 +45,9 @@ class Object
         if key_class.superclass == Object || key_class == Object
           return options[:description] if options[:description].present?
           throw :exception, result if options[:original_throw]
-          msg = (options[:original_missing] || result).message
-          msg.instance_variables_set(:@missing, true)
+          missing = options[:original_missing] || result
+          msg = missing.message
+          msg.instance_variables_set(:@missing, missing)
           msg
         else
           options[:class] = key_class.superclass
