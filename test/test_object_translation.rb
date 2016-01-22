@@ -35,8 +35,8 @@ module Coaster
     end
 
     def test_translation_sub
-      assert_equal 'Coaster SampleObject Title', SampleObject._translate('.title')
-      assert_equal 'Coaster SampleObject Title', SampleObject._translate(:title)
+      assert_equal 'Coaster SampleObject Title (class.Coaster.SampleObject.title)', SampleObject._translate('.title')
+      assert_equal 'Coaster SampleObject Title (class.Coaster.SampleObject.title)', SampleObject._translate(:title)
     end
 
     def test_translation_with_key
@@ -45,7 +45,7 @@ module Coaster
 
     def test_translation_inheritance
       assert_equal 'Coaster SampleObject Translated', Inherited._translate
-      assert_equal 'Coaster SampleObject Title', Inherited._translate(:title)
+      assert_equal 'Coaster SampleObject Title (class.Coaster.Inherited.title)', Inherited._translate(:title)
     end
 
     def teardown

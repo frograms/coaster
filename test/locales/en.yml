@@ -4,7 +4,7 @@ en:
       self: 'Coaster Translated'
       SampleObject:
         self: 'Coaster SampleObject Translated'
-        title: 'Coaster SampleObject Title'
+        title: 'Coaster SampleObject Title (%{tkey})'
       TestStandardError:
         SampleError:
           test: 'Test this translation'

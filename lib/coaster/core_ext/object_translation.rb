@@ -31,6 +31,7 @@ class Object
       unless options.key?(:original_throw)
         options[:original_throw] = options.delete(:throw)
       end
+      options[:tkey] ||= key
       options.merge!(throw: true)
       result = catch(:exception) do
         I18n.t(key, *args, options)
@@ -48,6 +49,7 @@ class Object
           missing = options[:original_missing] || result
           msg = missing.message
           msg.instance_variable_set(:@missing, missing)
+          msg.instance_variable_set(:@tkey, options[:tkey])
           msg
         else
           options[:class] = key_class.superclass
@@ -55,6 +57,7 @@ class Object
         end
       else
         result.instance_variable_set(:@translated, true)
+        result.instance_variable_set(:@tkey, options[:tkey])
         result
       end
     end
