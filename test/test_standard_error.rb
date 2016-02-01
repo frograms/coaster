@@ -11,6 +11,8 @@ module Coaster
       def self.status; 20 end
     end
 
+    class UntitledError < StandardError; end
+
     def setup
       I18n.backend = I18n::Backend::Simple.new
       I18n.load_path += [File.expand_path('../locales/en.yml', __FILE__)]
@@ -96,6 +98,12 @@ LOG
       raise SampleError, 'foobar'
     rescue => e
       assert_equal e.title, 'Test this title'
+    end
+
+    def test_title_missing
+      raise UntitledError, 'untitled'
+    rescue => e
+      assert_equal e.title, nil
     end
   end
 end

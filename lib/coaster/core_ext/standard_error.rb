@@ -16,7 +16,8 @@ class StandardError
     end
 
     def title
-      _translate('.title')
+      t = _translate('.title')
+      t.instance_variable_get(:@missing) ? nil : t
     end
   end
 
