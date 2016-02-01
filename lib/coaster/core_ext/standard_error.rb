@@ -69,7 +69,7 @@ class StandardError
   end
 
   def title
-    self.class.title
+    attributes[:title] || self.class.title
   end
 
   def attributes
