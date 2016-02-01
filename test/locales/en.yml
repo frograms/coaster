@@ -8,5 +8,6 @@ en:
       TestStandardError:
         SampleError:
           test: 'Test this translation'
+          title: 'Test this title'
   sample:
     title: 'Sample Title'

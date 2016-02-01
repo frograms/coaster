@@ -14,6 +14,10 @@ class StandardError
     def http_status
       500
     end
+
+    def title
+      _translate('.title')
+    end
   end
 
   attr_accessor :tags, :level, :tkey
@@ -61,6 +65,10 @@ class StandardError
 
   def status
     self.class.status
+  end
+
+  def title
+    self.class.title
   end
 
   def attributes

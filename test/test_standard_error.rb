@@ -91,5 +91,11 @@ LOG
     rescue => e
       assert_equal e._translate, 'Test this translation'
     end
+
+    def test_title
+      raise SampleError, 'foobar'
+    rescue => e
+      assert_equal e.title, 'Test this title'
+    end
   end
 end
