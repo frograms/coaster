@@ -136,7 +136,7 @@ class StandardError
     lg += "\n\tMESSAGE: #{message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
       unless var.to_s.start_with?('@_')
-        lg += "\n\t#{var}: #{instance_variable_get(var).inspect}"
+        lg += "\n\t#{var}: #{instance_variable_get(var)}"
       end
     end
     if cause
