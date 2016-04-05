@@ -86,7 +86,7 @@ class StandardError
   end
 
   def code
-    attributes[:code] || http_status
+    attributes[:code] || self.class.code || http_status
   end
 
   # description is user friendly messages, do not use error's message
