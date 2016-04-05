@@ -10,6 +10,7 @@ class StandardError
     def status
       999999 # Unknown
     end
+    alias_method :code, :status
 
     def http_status
       500
@@ -86,7 +87,7 @@ class StandardError
   end
 
   def code
-    attributes[:code] || http_status
+    attributes[:code] || status
   end
 
   # description is user friendly messages, do not use error's message
