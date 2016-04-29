@@ -121,7 +121,7 @@ class StandardError
     hash
   end
 
-  def translate_params
+  def _translate_params
     attributes.merge(
       type: self.class.name, status: status,
       http_status: http_status, message: message
