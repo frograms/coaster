@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = 'Ruby Core Extensions'
   s.version = Coaster::VERSION
   s.platform = Gem::Platform::RUBY
-  s.date = '2016-01-09'
+  s.date = Time.now.strftime('%Y-%m-%d')
   s.summary = 'A little convenient feature for standard library'
   s.homepage = 'http://github.com/frograms/coaster'
   s.authors = ['buzz jung']
