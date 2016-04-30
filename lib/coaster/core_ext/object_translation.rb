@@ -33,6 +33,7 @@ class Object
       end
       options[:tkey] ||= key
       options.merge!(throw: true)
+      options.symbolize_keys!
       result = catch(:exception) do
         I18n.t(key, *args, options)
       end

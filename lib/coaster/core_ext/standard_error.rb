@@ -1,4 +1,3 @@
-require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/class/attribute_accessors'
 require 'active_support/core_ext/string'
 require 'coaster/core_ext/object_translation'
@@ -137,7 +136,9 @@ class StandardError
     lg += "\n\tMESSAGE: #{message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
       unless var.to_s.start_with?('@_')
-        lg += "\n\t#{var}: #{instance_variable_get(var)}"
+        val = instance_variable_get(var)
+        val = val.inspect rescue val.to_s
+        lg += "\n\t#{var}: #{val}"
       end
     end
     if cause
