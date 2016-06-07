@@ -73,7 +73,7 @@ class StandardError
   end
 
   def attributes
-    if cause && cause.respond_to?(:attributes)
+    if cause && cause.respond_to?(:attributes) && cause.attributes.is_a?(Hash)
       cause.attributes.merge(@attributes)
     else
       @attributes
