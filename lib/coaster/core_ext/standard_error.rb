@@ -73,6 +73,7 @@ class StandardError
   end
 
   def attributes
+    @attributes ||= HashWithIndifferentAccess.new
     if cause && cause.respond_to?(:attributes) && cause.attributes.is_a?(Hash)
       cause.attributes.merge(@attributes)
     else
