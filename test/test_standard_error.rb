@@ -105,5 +105,29 @@ LOG
     rescue => e
       assert_equal e.title, nil
     end
+
+    def root_cause_sample1
+      raise StandardError, 'a'
+    end
+
+    def root_cause_sample2
+      root_cause_sample1
+    rescue
+      raise NoMethodError, 'b'
+    end
+
+    def root_cause_sample3
+      root_cause_sample2
+    rescue
+      raise ArgumentError, 'c'
+    end
+
+    def test_root_cause
+      begin
+        root_cause_sample3
+      rescue => e
+        assert_equal e.root_cause.message, 'a'
+      end
+    end
   end
 end

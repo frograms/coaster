@@ -106,6 +106,10 @@ class StandardError
   end
   alias_method :obj, :object
 
+  def root_cause
+    cause.respond_to?(:root_cause) ? cause.root_cause : self
+  end
+
   def to_hash
     hash = @attributes.merge(
       type: self.class.name, status: status,
