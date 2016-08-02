@@ -18,10 +18,10 @@ Gem::Specification.new do |s|
   s.require_path = %w{lib}
 
   s.add_dependency 'i18n', '~> 0.6'
-  s.add_dependency 'rake', '~> 10.0'
-  s.add_dependency 'activesupport', '~> 3.0'
+  s.add_dependency 'rake', '>= 10.0', '<= 11.2.2'
+  s.add_dependency 'activesupport', '>= 3.0', '< 5.0.0'
 
-  s.add_development_dependency 'bundler', '~> 1.0'
+  s.add_development_dependency 'bundler', '~> 1.12'
   s.add_development_dependency 'pry', '~> 0.8'
   s.add_development_dependency 'pry-stack_explorer', '~> 0.4'
   s.add_development_dependency 'pry-byebug', '~> 3.0'
