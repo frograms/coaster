@@ -140,7 +140,11 @@ class StandardError
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
-      unless var.to_s.start_with?('@_')
+      if var.to_s.start_with?('@_')
+        next
+      elsif var.to_s == '@spell_checker'
+        next
+      else
         val = instance_variable_get(var)
         val = val.inspect rescue val.to_s
         lg += "\n\t#{var}: #{val}"
