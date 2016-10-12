@@ -1,5 +1,3 @@
-require 'active_support/core_ext/class/attribute_accessors'
-require 'active_support/core_ext/string'
 require 'coaster/core_ext/object_translation'
 
 class StandardError
@@ -21,10 +19,11 @@ class StandardError
     end
   end
 
-  attr_accessor :tags, :level, :tkey
+  attr_accessor :tags, :level, :tkey, :fingerprint
 
   def initialize(message = nil, cause = $!)
-    @tags = []
+    @fingerprint = Coaster.default_fingerprint
+    @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
     @tkey = nil
@@ -34,6 +33,7 @@ class StandardError
         msg = message
         set_backtrace(message.backtrace)
       when StandardError
+        @fingerprint = message.fingerprint
         @tags = message.tags
         @level = message.level
         @tkey = message.tkey
@@ -42,10 +42,11 @@ class StandardError
         set_backtrace(message.backtrace)
       when Hash then
         hash = message.with_indifferent_access rescue message
-        msg = hash[:message]
-        msg = hash[:msg] if msg.nil?
-        msg = hash[:m] if msg.nil?
-        @tags = Array(hash.delete(:tags) || hash.delete(:tag))
+        msg = hash.delete(:m)
+        msg = hash.delete(:msg) || msg
+        msg = hash.delete(:message) || msg
+        @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
+        @tags = hash.delete(:tags) || hash.delete(:tag)
         @level = hash.delete(:level) || hash.delete(:severity) || @level
         @tkey = hash.delete(:tkey)
         msg = cause.message if msg.nil? && cause
@@ -59,6 +60,8 @@ class StandardError
         @attributes[:object] = message
     end
 
+    @fingerprint = [] unless @fingerprint.is_a?(Array)
+    @tags = {} unless @tags.is_a?(Hash)
     msg = nil if msg == false
     super(msg)
     set_backtrace(cause.backtrace) if cause
@@ -161,6 +164,18 @@ class StandardError
     lg << "\n"
   end
 
+  def rails_tag
+    (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
+      if fp == true || fp == :class
+        self.class.name
+      elsif fp == :default || fp == '{{ default }}'
+        nil
+      else
+        fp
+      end
+    end.compact
+  end
+
   def logging(options = {})
     logger = options[:logger]
     logger = Rails.logger if logger.nil? && defined?(Rails)
@@ -174,7 +189,7 @@ class StandardError
       msg += cleaner.clean(backtrace).join("\n\t\t")
     end
 
-    logger.tagged(*tags) do
+    logger.tagged(*rails_tag) do
       if logger.respond_to?(level)
         logger.send(level, msg)
       else

@@ -4,22 +4,11 @@ class StandardError
   alias_method :initialize_original, :initialize
   def initialize(message = nil, cause = $!)
     initialize_original(message, cause)
-    @raven = (attributes.delete(:raven) || {}).with_indifferent_access
-    @raven[:fingerprint] ||= attributes[:fingerprint] || [:default]
+    @raven = (attributes.delete(:raven) || attributes.delete(:sentry) || {}).with_indifferent_access
   end
 
-  def fingerprint=(*fp)
-    raven[:fingerprint] = fp
-  end
-
-  def fingerprint
-    raven[:fingerprint]
-  end
-
-  def capture(options = {})
-    notes = raven.merge(options || {})
-
-    notes[:fingerprint] = notes[:fingerprint].flatten.map do |fp|
+  def raven_fingerprint
+    (fingerprint || Coaster.default_raven_fingerprint).flatten.map do |fp|
       if fp == true || fp == :class
         self.class.name
       elsif fp == :default
@@ -27,13 +16,24 @@ class StandardError
       else
         fp
       end
-    end
-    notes[:tags] ||= {}
+    end.flatten
+  end
+
+  def notes(options = {})
+    opts = options ? options.dup : {}
+    extra_opts = opts.slice!(:fingerprint, :tags, :level, :extra)
+    opts[:extra] = extra_opts.merge(opts[:extra] || {})
+    notes = raven.merge(opts)
+
+    notes[:fingerprint] ||= raven_fingerprint
+    notes[:tags] ||= (tags && tags.merge(notes[:tags] || {})) || {}
     notes[:tags] = notes[:tags].merge(environment: Rails.env) if defined?(Rails)
     notes[:level] ||= self.level
-    notes[:extra] = (notes[:extra] || {}).merge(attributes)
+    notes[:extra] = attributes.merge(notes[:extra])
+  end
 
-    Raven.annotate_exception(self, notes)
+  def capture(options = {})
+    Raven.annotate_exception(self, notes(options))
     Raven.capture_exception(self)
   rescue => e
     msg = "#{e.class.name}: #{e.message}"
@@ -41,9 +41,17 @@ class StandardError
     Raven.logger.error(msg)
   end
 
+  # options
+  #   :logger
+  #   :cleaner
+  #   :fingerprint
+  #   :tags
+  #   :level
+  #   :extra
+  #   and others are merged to extra
   alias_method :just_logging, :logging
   def logging(options = {})
-    capture(options[:raven])
+    capture(options)
     just_logging(options)
   end
 end

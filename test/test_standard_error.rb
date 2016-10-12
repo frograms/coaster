@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'minitest/autorun'
+require 'coaster/core_ext/standard_error/raven'
 
 module Coaster
   class TestStandardError < Minitest::Test
@@ -74,16 +75,20 @@ module Coaster
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
 	MESSAGE: Coaster::TestStandardError::SampleError
-	@tags: []
+	@fingerprint: []
+	@tags: {}
 	@level: \"error\"
 	@attributes: {\"wat\"=>\"cha\"}
 	@tkey: nil
+	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Coaster::TestStandardError::SampleError
-		@tags: []
+		@fingerprint: []
+		@tags: {}
 		@level: \"error\"
 		@attributes: {\"frog\"=>\"rams\"}
 		@tkey: nil
+		@raven: {}
 LOG
       assert_equal(detail, e.to_detail)
     end
@@ -128,6 +133,12 @@ LOG
       rescue => e
         assert_equal e.root_cause.message, 'a'
       end
+    end
+
+    def test_raven_notes
+      raise SampleError, m: 'foofoo', something: 'other'
+    rescue => e
+      assert_equal e.notes(the_other: 'something'), {something: 'other', the_other: 'something'}.with_indifferent_access
     end
   end
 end
