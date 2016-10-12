@@ -30,6 +30,7 @@ class StandardError
     notes[:tags] = notes[:tags].merge(environment: Rails.env) if defined?(Rails)
     notes[:level] ||= self.level
     notes[:extra] = attributes.merge(notes[:extra])
+    notes
   end
 
   def capture(options = {})

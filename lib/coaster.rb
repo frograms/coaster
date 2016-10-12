@@ -6,7 +6,7 @@ require 'active_support/core_ext/hash/slice'
 
 module Coaster
   mattr_accessor :logger
-  mattr_writer   :default_raven_fingerprint
+  mattr_writer   :default_fingerprint
 
   DEFAULT_FINGERPRINT = [:default, :class]
 
