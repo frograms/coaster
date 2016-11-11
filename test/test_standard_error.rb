@@ -138,7 +138,7 @@ LOG
     def test_raven_notes
       raise SampleError, m: 'foofoo', something: 'other'
     rescue => e
-      assert_equal e.notes(the_other: 'something'), {something: 'other', the_other: 'something'}.with_indifferent_access
+      assert_equal e.notes(the_other: 'something'), {extra: {something: 'other', the_other: 'something'}, fingerprint: [], tags: {}, level: 'error'}.with_indifferent_access
     end
   end
 end

@@ -1,10 +1,14 @@
 class StandardError
-  attr_accessor :raven
+  attr_writer :raven
 
   alias_method :initialize_original, :initialize
   def initialize(message = nil, cause = $!)
     initialize_original(message, cause)
     @raven = (attributes.delete(:raven) || attributes.delete(:sentry) || {}).with_indifferent_access
+  end
+
+  def raven
+    @raven ||= {}.with_indifferent_access
   end
 
   def raven_fingerprint
@@ -23,14 +27,14 @@ class StandardError
     opts = options ? options.dup : {}
     extra_opts = opts.slice!(:fingerprint, :tags, :level, :extra)
     opts[:extra] = extra_opts.merge(opts[:extra] || {})
-    notes = raven.merge(opts)
+    nt = raven.merge(opts)
 
-    notes[:fingerprint] ||= raven_fingerprint
-    notes[:tags] ||= (tags && tags.merge(notes[:tags] || {})) || {}
-    notes[:tags] = notes[:tags].merge(environment: Rails.env) if defined?(Rails)
-    notes[:level] ||= self.level
-    notes[:extra] = attributes.merge(notes[:extra])
-    notes
+    nt[:fingerprint] ||= raven_fingerprint
+    nt[:tags] ||= (tags && tags.merge(nt[:tags] || {})) || {}
+    nt[:tags] = nt[:tags].merge(environment: Rails.env) if defined?(Rails)
+    nt[:level] ||= self.level
+    nt[:extra] = attributes.merge(nt[:extra])
+    nt
   end
 
   def capture(options = {})
