@@ -1,7 +1,7 @@
 require 'coaster/core_ext/object_translation'
 
 class StandardError
-  cattr_accessor :cleaner
+  cattr_accessor :cleaner, :cause_cleaner
 
   class << self
     def status
@@ -51,20 +51,23 @@ class StandardError
         @tkey = hash.delete(:tkey)
         msg = cause.message if msg.nil? && cause
         @attributes.merge!(hash)
-      when String, NilClass then
+      when String then
         msg = message
-      when FalseClass then
-        msg = false
+      when FalseClass, NilClass then
+        msg = ''
       else
-        msg = message
+        msg = message.class.name
         @attributes[:object] = message
     end
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
     @tags = {} unless @tags.is_a?(Hash)
-    msg = nil if msg == false
+    msg ||= ''
     super(msg)
-    set_backtrace(cause.backtrace) if cause
+  end
+
+  def safe_message
+    message || ''
   end
 
   def status
@@ -98,7 +101,7 @@ class StandardError
   def description
     dsc = attributes[:description] || attributes[:desc]
     return dsc if dsc
-    msg = message.dup
+    msg = safe_message.dup
     msg.instance_variable_set(:@raw, true)
     msg
   end
@@ -141,7 +144,7 @@ class StandardError
 
   def to_detail
     lg = "[#{self.class.name}] status:#{status}"
-    lg += "\n\tMESSAGE: #{message.gsub(/\n/, "\n\t\t")}"
+    lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
       if var.to_s.start_with?('@_')
         next
@@ -159,6 +162,9 @@ class StandardError
         lg += cause.to_detail.strip.gsub(/\n/, "\n\t")
       else
         lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
+      end
+      if cause_cleaner && cause.backtrace
+        lg += cause_cleaner.clean(cause.backtrace).join("\n\t\t")
       end
     end
     lg << "\n"
@@ -185,8 +191,8 @@ class StandardError
     msg = to_detail
 
     if cl && backtrace
-      msg += "\t\t"
-      msg += cleaner.clean(backtrace).join("\n\t\t")
+      msg += "\tBACKTRACE:\n\t"
+      msg += cl.clean(backtrace).join("\n\t")
     end
 
     logger.tagged(*rails_tag) do
