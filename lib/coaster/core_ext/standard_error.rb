@@ -56,8 +56,7 @@ class StandardError
       when FalseClass, NilClass then
         msg = ''
       else
-        msg = message.class.name
-        @attributes[:object] = message
+        msg = message
     end
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
