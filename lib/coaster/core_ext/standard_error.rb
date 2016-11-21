@@ -195,7 +195,7 @@ class StandardError
     end
 
     logger.tagged(*rails_tag) do
-      if logger.respond_to?(level)
+      if level && logger.respond_to?(level)
         logger.send(level, msg)
       else
         logger.error(msg)
