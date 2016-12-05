@@ -44,13 +44,13 @@ module Coaster
         "type"=>"Coaster::TestStandardError::ExampleError",
         "status"=>20,
         "http_status"=>500,
-        "message"=>"Coaster::TestStandardError::SampleError",
+        "message"=>"Test this title",
         "cause"=>{
           "frog"=>"rams",
           "type"=>"Coaster::TestStandardError::SampleError",
           "status"=>10,
           "http_status"=>500,
-          "message"=>"Coaster::TestStandardError::SampleError"
+          "message"=>"Test this title"
         }
       }, e.to_hash)
     end
@@ -74,7 +74,7 @@ module Coaster
     rescue => e
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Coaster::TestStandardError::SampleError
+	MESSAGE: Test this title
 	@fingerprint: []
 	@tags: {}
 	@level: \"error\"
@@ -82,7 +82,7 @@ module Coaster
 	@tkey: nil
 	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
-		MESSAGE: Coaster::TestStandardError::SampleError
+		MESSAGE: Test this title
 		@fingerprint: []
 		@tags: {}
 		@level: \"error\"

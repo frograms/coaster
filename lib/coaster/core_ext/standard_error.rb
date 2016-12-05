@@ -15,14 +15,14 @@ class StandardError
 
     def title
       t = _translate('.title')
-      t.instance_variable_get(:@missing) ? nil : t
+      t.instance_variable_defined?(:@missing) ? nil : t
     end
   end
 
   attr_accessor :tags, :level, :tkey, :fingerprint
 
   def initialize(message = nil, cause = $!)
-    @fingerprint = Coaster.default_fingerprint
+    @fingerprint = Coaster.default_fingerprint.dup
     @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
@@ -61,7 +61,7 @@ class StandardError
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
     @tags = {} unless @tags.is_a?(Hash)
-    msg ||= ''
+    msg ||= self.class.title
     super(msg)
   end
 
