@@ -38,6 +38,8 @@ class StandardError
   end
 
   def capture(options = {})
+    return if options.key?(:report) && !options[:report]
+    return if attributes.key?(:report) && !attributes[:report]
     Raven.annotate_exception(self, notes(options))
     Raven.capture_exception(self)
   rescue => e
@@ -53,6 +55,7 @@ class StandardError
   #   :tags
   #   :level
   #   :extra
+  #   :report
   #   and others are merged to extra
   alias_method :just_logging, :logging
   def logging(options = {})
