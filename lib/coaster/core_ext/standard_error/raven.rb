@@ -29,7 +29,6 @@ class StandardError
     opts[:extra] = extra_opts.merge(opts[:extra] || {})
     nt = raven.merge(opts)
 
-    nt[:fingerprint] ||= raven_fingerprint
     nt[:tags] ||= (tags && tags.merge(nt[:tags] || {})) || {}
     nt[:tags] = nt[:tags].merge(environment: Rails.env) if defined?(Rails)
     nt[:level] ||= self.level
@@ -41,7 +40,7 @@ class StandardError
     return if options.key?(:report) && !options[:report]
     return if attributes.key?(:report) && !attributes[:report]
     Raven.annotate_exception(self, notes(options))
-    Raven.capture_exception(self)
+    Raven.capture_exception(self) {|event| event.fingerprint = raven_fingerprint}
   rescue => e
     msg = "#{e.class.name}: #{e.message}"
     msg += "\n\t" + e.backtrace.join("\n\t")
