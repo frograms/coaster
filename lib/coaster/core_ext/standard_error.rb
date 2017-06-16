@@ -194,12 +194,10 @@ class StandardError
       msg += cl.clean(backtrace).join("\n\t")
     end
 
-    logger.tagged(*rails_tag) do
-      if level && logger.respond_to?(level)
-        logger.send(level, msg)
-      else
-        logger.error(msg)
-      end
+    if level && logger.respond_to?(level)
+      logger.send(level, msg)
+    else
+      logger.error(msg)
     end
   end
 end
