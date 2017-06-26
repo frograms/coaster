@@ -79,10 +79,10 @@ class Object
 
     if respond_to?(:description) && description.present? && description != 'false' && description != self.class.name
       if !key.is_a?(String) && key != :force
-        return description
-      else
-        options.merge!(description: description)
+        desc = description
+        return desc unless desc.instance_variable_get(:@raw)
       end
+      options.merge!(description: description)
     end
 
     options.merge!(_translate_params)
