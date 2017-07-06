@@ -91,8 +91,16 @@ class StandardError
     attributes[:http_status] || self.class.http_status
   end
 
+  def http_status=(value)
+    attributes[:http_status] = value
+  end
+
   def code
     attributes[:code] || status
+  end
+
+  def code=(value)
+    attributes[:code] = value
   end
 
   # description is user friendly messages, do not use error's message
