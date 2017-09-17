@@ -39,8 +39,11 @@ class StandardError
   def capture(options = {})
     return if options.key?(:report) && !options[:report]
     return if attributes.key?(:report) && !attributes[:report]
-    Raven.annotate_exception(self, notes(options))
-    Raven.capture_exception(self) {|event| event.fingerprint = raven_fingerprint}
+    nt = notes(options)
+    Raven.user_context(nt[:user])
+    Raven.tags_context(nt[:tags])
+    Raven.extra_context(nt[:extra])
+    Raven.capture_exception(self, level: nt[:level]) {|event| event.fingerprint = raven_fingerprint}
   rescue => e
     msg = "#{e.class.name}: #{e.message}"
     msg += "\n\t" + e.backtrace.join("\n\t")
