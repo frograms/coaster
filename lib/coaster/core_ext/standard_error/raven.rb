@@ -40,10 +40,12 @@ class StandardError
     return if options.key?(:report) && !options[:report]
     return if attributes.key?(:report) && !attributes[:report]
     nt = notes(options)
-    Raven.user_context(nt[:user])
-    Raven.tags_context(nt[:tags])
-    Raven.extra_context(nt[:extra])
-    Raven.capture_exception(self, level: nt[:level]) {|event| event.fingerprint = raven_fingerprint}
+    Raven.capture_exception(self, level: nt[:level]) do |event|
+      event.user.merge!(nt[:user])
+      event.tags.merge!(nt[:tags])
+      event.extra.merge!(nt[:extra])
+      event.fingerprint = raven_fingerprint
+    end
   rescue => e
     msg = "#{e.class.name}: #{e.message}"
     msg += "\n\t" + e.backtrace.join("\n\t")
