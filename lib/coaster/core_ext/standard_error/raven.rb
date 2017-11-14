@@ -41,7 +41,7 @@ class StandardError
     return if attributes.key?(:report) && !attributes[:report]
     nt = notes(options)
     Raven.capture_exception(self, level: nt[:level]) do |event|
-      event.user.merge!(nt[:user])
+      event.user.merge!(nt[:user] || {})
       event.tags.merge!(nt[:tags])
       event.extra.merge!(nt[:extra])
       event.fingerprint = raven_fingerprint
