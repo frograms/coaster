@@ -78,12 +78,12 @@ class StandardError
   end
 
   def attributes
-    @attributes ||= HashWithIndifferentAccess.new
+    return @attributes if defined?(@attributes)
+    @attributes = HashWithIndifferentAccess.new
     if cause && cause.respond_to?(:attributes) && cause.attributes.is_a?(Hash)
-      cause.attributes.merge(@attributes)
-    else
-      @attributes
+      @attributes = @attributes.merge(cause.attributes)
     end
+    @attributes
   end
   alias_method :attr, :attributes
 
