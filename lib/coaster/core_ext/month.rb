@@ -56,6 +56,10 @@ class Month
     Date.new(year, month, -1)
   end
 
+  def each_date(&block)
+     (first_date..last_date).each(&block)
+  end
+
   def first_day
     first_date.day
   end
