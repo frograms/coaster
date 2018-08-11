@@ -109,4 +109,9 @@ class Month
   def <=>(other)
     first_date <=> Month.from(other).first_date
   end
+
+  # Range implement
+  def succ
+    later
+  end
 end
