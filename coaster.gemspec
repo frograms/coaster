@@ -18,8 +18,8 @@ Gem::Specification.new do |s|
   s.require_path = %w{lib}
 
   s.add_dependency 'i18n', '~> 0.6'
-  s.add_dependency 'rake', '>= 10.0', '< 20.0'
-  s.add_dependency 'activesupport', '>= 3.0', '< 8.0'
+  s.add_dependency 'rake', '>= 10.0'
+  s.add_dependency 'activesupport', '>= 3.0'
   s.add_dependency 'attr_extras', '~> 5.2'
 
   s.add_development_dependency 'bundler', '~> 1.12'
