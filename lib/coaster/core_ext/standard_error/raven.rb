@@ -12,7 +12,7 @@ class StandardError
   end
 
   def raven_fingerprint
-    (fingerprint || Coaster.default_raven_fingerprint).flatten.map do |fp|
+    (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
       if fp == true || fp == :class
         self.class.name
       elsif fp == :default
