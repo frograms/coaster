@@ -190,7 +190,7 @@ class StandardError
   end
 
   def logging(options = {})
-    logger = options[:logger]
+    logger = options[:logger] || Coaster.logger
     logger = Rails.logger if logger.nil? && defined?(Rails)
     return nil unless logger
 
