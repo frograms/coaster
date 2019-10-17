@@ -49,6 +49,7 @@ class Object
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
           msg = missing.message
+          msg = msg.dup
           msg.instance_variable_set(:@missing, missing)
           msg.instance_variable_set(:@tkey, options[:tkey])
           msg
