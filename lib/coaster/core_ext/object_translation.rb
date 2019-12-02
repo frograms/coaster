@@ -3,7 +3,7 @@ require 'i18n'
 class Object
   class << self
     def _translate(*args)
-      options = args.last.is_a?(Hash) ? args.pop.dup : {}
+      options = (args.last.is_a?(Hash) ? args.pop : {}).with_indifferent_access
       options.merge!(_translate_params)
 
       key = args.shift
@@ -33,7 +33,6 @@ class Object
       end
       options[:tkey] ||= key
       options.merge!(throw: true)
-      options.symbolize_keys!
       result = catch(:exception) do
         I18n.t(key, *args, options)
       end
@@ -75,7 +74,7 @@ class Object
   # Foo::Bar.new._translate(:force)    #=> ignore 'message' even if message exists
   #
   def _translate(*args)
-    options = args.last.is_a?(Hash) ? args.pop.dup : {}
+    options = (args.last.is_a?(Hash) ? args.pop : {}).with_indifferent_access
     key = args.shift || (respond_to?(:tkey) ? tkey : nil)
 
     if respond_to?(:description) && description.present? && description != 'false' && description != self.class.name
