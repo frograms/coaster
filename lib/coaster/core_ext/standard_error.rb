@@ -61,7 +61,7 @@ class StandardError
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
     @tags = {} unless @tags.is_a?(Hash)
-    msg ||= self.class.title
+    msg ||= self.class._translate
     super(msg)
   end
 
