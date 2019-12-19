@@ -57,7 +57,7 @@ class Object
           _translate(subkey, *args, options)
         end
       else
-        result = result.dup
+        result = result.dup if result.frozen?
         result.instance_variable_set(:@translated, true)
         result.instance_variable_set(:@tkey, options[:tkey])
         result
