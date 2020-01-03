@@ -48,6 +48,10 @@ module Coaster
       assert_equal 'Coaster SampleObject Title (class.Coaster.Inherited.title)', Inherited._translate(:title)
     end
 
+    def test_interpolation
+      assert_equal 'Coaster SampleObject interpolation test this interpolated', SampleObject._translate('.interpolation', {test_this: 'this interpolated'}.with_indifferent_access)
+    end
+
     def teardown
       I18n.locale = nil
       I18n.default_locale = nil

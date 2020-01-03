@@ -5,6 +5,7 @@ en:
       SampleObject:
         self: 'Coaster SampleObject Translated'
         title: 'Coaster SampleObject Title (%{tkey})'
+        interpolation: 'Coaster SampleObject interpolation test %{test_this}'
       TestStandardError:
         ExampleError:
           self: 'Test example error'

@@ -5,7 +5,7 @@ class Object
     def _translate(*args)
       options = args.last.is_a?(Hash) ? args.pop : {}
       options.merge!(_translate_params)
-      options.to_hash.symbolize_keys!
+      options = options.to_hash.symbolize_keys!
 
       key = args.shift
       subkey = nil
