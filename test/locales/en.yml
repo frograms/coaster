@@ -6,7 +6,10 @@ en:
         self: 'Coaster SampleObject Translated'
         title: 'Coaster SampleObject Title (%{tkey})'
       TestStandardError:
+        ExampleError:
+          self: 'Test example error'
         SampleError:
+          self: 'Test sample error'
           test: 'Test this translation'
           title: 'Test this title'
   sample:

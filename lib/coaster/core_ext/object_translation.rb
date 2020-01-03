@@ -3,8 +3,9 @@ require 'i18n'
 class Object
   class << self
     def _translate(*args)
-      options = (args.last.is_a?(Hash) ? args.pop : {}).with_indifferent_access
+      options = args.last.is_a?(Hash) ? args.pop : {}
       options.merge!(_translate_params)
+      options.to_hash.symbolize_keys!
 
       key = args.shift
       subkey = nil

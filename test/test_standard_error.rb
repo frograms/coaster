@@ -39,20 +39,16 @@ module Coaster
         raise ExampleError, {wat: 'cha'}
       end
     rescue => e
-      assert_equal({
-        "wat"=>"cha",
-        "type"=>"Coaster::TestStandardError::ExampleError",
-        "status"=>20,
-        "http_status"=>500,
-        "message"=>"Test this title",
-        "cause"=>{
-          "frog"=>"rams",
-          "type"=>"Coaster::TestStandardError::SampleError",
-          "status"=>10,
-          "http_status"=>500,
-          "message"=>"Test this title"
-        }
-      }, e.to_hash)
+      assert_equal e.to_hash['wat'], 'cha'
+      assert_equal e.to_hash['type'], 'Coaster::TestStandardError::ExampleError'
+      assert_equal e.to_hash['status'], 20
+      assert_equal e.to_hash['http_status'], 500
+      assert_equal e.to_hash['message'], 'Test sample error'
+      assert_equal e.to_hash['cause']['frog'], 'rams'
+      assert_equal e.to_hash['cause']['type'], 'Coaster::TestStandardError::SampleError'
+      assert_equal e.to_hash['cause']['status'], 10
+      assert_equal e.to_hash['cause']['http_status'], 500
+      assert_equal e.to_hash['cause']['message'], 'Test sample error'
     end
 
     def test_cause_attributes
@@ -62,7 +58,9 @@ module Coaster
         raise ExampleError, {wat: 'cha'}
       end
     rescue => e
-      assert_equal({frog: 'rams', wat: 'cha'}.with_indifferent_access, e.attr)
+      assert_equal e.cause.attr['frog'], 'rams'
+      assert_equal e.attr['frog'], 'rams'
+      assert_equal e.attr['wat'], 'cha'
     end
 
     def test_to_detail
@@ -74,15 +72,15 @@ module Coaster
     rescue => e
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Test this title
+	MESSAGE: Test sample error
 	@fingerprint: []
 	@tags: {}
 	@level: \"error\"
-	@attributes: {\"wat\"=>\"cha\"}
+	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
 	@tkey: nil
 	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
-		MESSAGE: Test this title
+		MESSAGE: Test sample error
 		@fingerprint: []
 		@tags: {}
 		@level: \"error\"
@@ -108,7 +106,7 @@ LOG
     def test_title_missing
       raise UntitledError, 'untitled'
     rescue => e
-      assert_equal e.title, nil
+      assert_nil e.title
     end
 
     def root_cause_sample1
@@ -138,7 +136,8 @@ LOG
     def test_raven_notes
       raise SampleError, m: 'foofoo', something: 'other'
     rescue => e
-      assert_equal e.notes(the_other: 'something'), {extra: {something: 'other', the_other: 'something'}, fingerprint: [], tags: {}, level: 'error'}.with_indifferent_access
+      assert_equal e.notes(the_other: 'something')[:extra][:something], 'other'
+      assert_equal e.notes(the_other: 'something')[:extra][:the_other], 'something'
     end
   end
 end

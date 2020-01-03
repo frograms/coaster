@@ -26,37 +26,38 @@ class StandardError
     @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
+    @attributes.merge!(cause.attributes || {}) if cause
     @tkey = nil
 
     case message
-      when Exception
-        msg = message
-        set_backtrace(message.backtrace)
-      when StandardError
-        @fingerprint = message.fingerprint
-        @tags = message.tags
-        @level = message.level
-        @tkey = message.tkey
-        @attributes = message.attributes
-        msg = message
-        set_backtrace(message.backtrace)
-      when Hash then
-        hash = message.with_indifferent_access rescue message
-        msg = hash.delete(:m)
-        msg = hash.delete(:msg) || msg
-        msg = hash.delete(:message) || msg
-        @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
-        @tags = hash.delete(:tags) || hash.delete(:tag)
-        @level = hash.delete(:level) || hash.delete(:severity) || @level
-        @tkey = hash.delete(:tkey)
-        msg = cause.message if msg.nil? && cause
-        @attributes.merge!(hash)
-      when String then
-        msg = message
-      when FalseClass, NilClass then
-        msg = ''
-      else
-        msg = message
+    when Exception
+      msg = message
+      set_backtrace(message.backtrace)
+    when StandardError
+      @fingerprint = message.fingerprint
+      @tags = message.tags
+      @level = message.level
+      @tkey = message.tkey
+      @attributes = message.attributes
+      msg = message
+      set_backtrace(message.backtrace)
+    when Hash then
+      hash = message.with_indifferent_access rescue message
+      msg = hash.delete(:m)
+      msg = hash.delete(:msg) || msg
+      msg = hash.delete(:message) || msg
+      @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
+      @tags = hash.delete(:tags) || hash.delete(:tag)
+      @level = hash.delete(:level) || hash.delete(:severity) || @level
+      @tkey = hash.delete(:tkey)
+      msg = cause.message if msg.nil? && cause
+      @attributes.merge!(hash)
+    when String then
+      msg = message
+    when FalseClass, NilClass then
+      msg = ''
+    else
+      msg = message
     end
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
