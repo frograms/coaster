@@ -26,7 +26,7 @@ class StandardError
     @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
-    @attributes.merge!(cause.attributes || {}) if cause
+    @attributes.merge!(cause.attributes || {}) if cause && cause.respond_to?(:attributes)
     @tkey = nil
 
     case message
