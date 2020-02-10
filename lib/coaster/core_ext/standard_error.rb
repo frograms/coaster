@@ -125,7 +125,7 @@ class StandardError
   end
 
   def to_hash
-    hash = @attributes.merge(
+    hash = attributes.merge(
       type: self.class.name, status: status,
       http_status: http_status, message: message
     )

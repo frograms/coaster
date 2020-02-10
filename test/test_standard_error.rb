@@ -139,5 +139,14 @@ LOG
       assert_equal e.notes(the_other: 'something')[:extra][:something], 'other'
       assert_equal e.notes(the_other: 'something')[:extra][:the_other], 'something'
     end
+
+    def test_to_hash
+      aa # raise NameError
+    rescue => e
+      assert_equal e.to_hash['type'], 'NameError'
+      assert_equal e.to_hash['status'], 999999
+      assert_equal e.to_hash['http_status'], 500
+      assert e.to_hash['message'] =~ /undefined local variable or method `aa'/
+    end
   end
 end
