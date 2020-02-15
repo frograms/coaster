@@ -115,6 +115,13 @@ class StandardError
   end
   alias_method :desc, :description
 
+  # more user friendly messages
+  def descriptions
+    return attributes[:descriptions] if attributes[:descriptions]
+    attributes[:descriptions] = {}
+    attributes[:descriptions]
+  end
+
   def object
     attributes[:object] || attributes[:obj]
   end

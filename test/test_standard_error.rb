@@ -148,5 +148,12 @@ LOG
       assert_equal e.to_hash['http_status'], 500
       assert e.to_hash['message'] =~ /undefined local variable or method `aa'/
     end
+
+    def test_descriptions
+      raise SampleError
+    rescue => e
+      e.descriptions.merge!(a: 1)
+      assert_equal e.descriptions['a'], 1
+    end
   end
 end
