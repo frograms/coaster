@@ -39,13 +39,13 @@ class Object
       end
 
       if result.is_a?(I18n::MissingTranslation)
-        Coaster.logger && Coaster.logger.warn(result)
         unless options.key?(:original_missing)
           options.merge!(original_missing: result)
         end
 
         if key_class.superclass == Object || key_class == Object
           return options[:description] if options[:description].present?
+          Coaster.logger && Coaster.logger.warn(result)
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
           msg = missing.message
