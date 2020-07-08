@@ -96,6 +96,14 @@ class StandardError
     attributes[:http_status] = value
   end
 
+  def report?
+    attributes.key?(:report) ? attributes[:report] : true
+  end
+
+  def intentional?
+    attributes[:intentional]
+  end
+
   def code
     attributes[:code] || status
   end
@@ -198,16 +206,23 @@ class StandardError
   end
 
   def logging(options = {})
-    logger = options[:logger] || Coaster.logger
-    logger = Rails.logger if logger.nil? && defined?(Rails)
-    return nil unless logger
+    return unless report?
+    logger = nil
+    if defined?(Rails)
+      return if Rails.env.test? && intentional?
+      logger = Rails.logger 
+    end
+    logger = options[:logger] || Coaster.logger || logger
+    return unless logger
 
     cl = options[:cleaner] || cleaner
     msg = to_detail
 
     if cl && backtrace
+      bt = cl.clean(backtrace)
+      bt = bt[0..2] if intentional?
       msg += "\tBACKTRACE:\n\t"
-      msg += cl.clean(backtrace).join("\n\t")
+      msg += bt.join("\n\t")
     end
 
     if level && logger.respond_to?(level)

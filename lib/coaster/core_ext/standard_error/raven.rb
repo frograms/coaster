@@ -38,7 +38,7 @@ class StandardError
 
   def capture(options = {})
     return if options.key?(:report) && !options[:report]
-    return if attributes.key?(:report) && !attributes[:report]
+    return unless report?
     nt = notes(options)
     Raven.capture_exception(self, level: nt[:level]) do |event|
       event.user.merge!(nt[:user] || {})
