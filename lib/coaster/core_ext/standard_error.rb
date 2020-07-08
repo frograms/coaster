@@ -4,14 +4,11 @@ class StandardError
   cattr_accessor :cleaner, :cause_cleaner
 
   class << self
-    def status
-      999999 # Unknown
-    end
+    def status; 999999 end # Unknown
     alias_method :code, :status
-
-    def http_status
-      500
-    end
+    def http_status;  500 end
+    def report?;      true end
+    def intentional?; false end
 
     def title
       t = _translate('.title')
@@ -66,17 +63,9 @@ class StandardError
     super(msg)
   end
 
-  def safe_message
-    message || ''
-  end
-
-  def status
-    self.class.status
-  end
-
-  def title
-    attributes[:title] || self.class.title
-  end
+  def safe_message; message || '' end
+  def status;       self.class.status end
+  def root_cause;   cause.respond_to?(:root_cause) ? cause.root_cause : self end
 
   def attributes
     return @attributes if defined?(@attributes)
@@ -88,29 +77,15 @@ class StandardError
   end
   alias_method :attr, :attributes
 
-  def http_status
-    attributes[:http_status] || self.class.http_status
-  end
-
-  def http_status=(value)
-    attributes[:http_status] = value
-  end
-
-  def report?
-    attributes.key?(:report) ? attributes[:report] : true
-  end
-
-  def intentional?
-    attributes[:intentional]
-  end
-
-  def code
-    attributes[:code] || status
-  end
-
-  def code=(value)
-    attributes[:code] = value
-  end
+  def http_status;         attributes[:http_status] || self.class.http_status end
+  def http_status=(value); attributes[:http_status] = value end
+  def code;         attributes[:code] || status end
+  def code=(value); attributes[:code] = value end
+  def title;        attributes[:title] || self.class.title end
+  def report?;      attributes.key?(:report) ? attributes[:report] : self.class.report? end
+  def intentional?; attributes.key?(:intentional) ? attributes[:intentional] : self.class.intentional? end
+  def object;       attributes[:object] || attributes[:obj] end
+  alias_method :obj, :object
 
   # description is user friendly messages, do not use error's message
   # error message is not user friendly in many cases.
@@ -128,15 +103,6 @@ class StandardError
     return attributes[:descriptions] if attributes[:descriptions]
     attributes[:descriptions] = {}
     attributes[:descriptions]
-  end
-
-  def object
-    attributes[:object] || attributes[:obj]
-  end
-  alias_method :obj, :object
-
-  def root_cause
-    cause.respond_to?(:root_cause) ? cause.root_cause : self
   end
 
   def to_hash
