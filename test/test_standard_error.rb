@@ -155,5 +155,15 @@ LOG
       e.descriptions.merge!(a: 1)
       assert_equal e.descriptions['a'], 1
     end
+
+    class SampleErrorSub < SampleError; end
+    class SampleErrorSubSub < SampleErrorSub; end
+    SampleError.after_logging(:blah) { @blah = 101 }
+    def test_before_logging
+      e = SampleErrorSubSub.new(m: 'foo')
+      assert !e.after_logging_blocks[:blah].nil?
+      e.logging
+      assert_equal e.instance_variable_get(:@blah), 101
+    end
   end
 end

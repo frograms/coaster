@@ -14,6 +14,24 @@ class StandardError
       t = _translate('.title')
       t.instance_variable_defined?(:@missing) ? nil : t
     end
+
+    def before_logging(name, &block)
+      @before_logging_blocks ||= {}
+      @before_logging_blocks[name] = block
+    end
+    def before_logging_blocks
+      @before_logging_blocks ||= {}
+      superclass <= StandardError ? superclass.after_logging_blocks.merge(@before_logging_blocks) : @before_logging_blocks
+    end
+
+    def after_logging(name, &block)
+      @after_logging_blocks ||= {}
+      @after_logging_blocks[name] = block
+    end
+    def after_logging_blocks
+      @after_logging_blocks ||= {}
+      superclass <= StandardError ? superclass.after_logging_blocks.merge(@after_logging_blocks) : @after_logging_blocks
+    end
   end
 
   attr_accessor :tags, :level, :tkey, :fingerprint
@@ -65,6 +83,8 @@ class StandardError
 
   def safe_message; message || '' end
   def status;       self.class.status end
+  def before_logging_blocks; self.class.before_logging_blocks end
+  def after_logging_blocks; self.class.after_logging_blocks end
   def root_cause;   cause.respond_to?(:root_cause) ? cause.root_cause : self end
 
   def attributes
@@ -172,6 +192,8 @@ class StandardError
   end
 
   def logging(options = {})
+    before_logging_blocks.values.each { |blk| instance_exec &blk }
+
     return unless report?
     logger = nil
     if defined?(Rails)
@@ -196,5 +218,7 @@ class StandardError
     else
       logger.error(msg)
     end
+
+    after_logging_blocks.values.each { |blk| instance_exec &blk }
   end
 end
