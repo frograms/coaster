@@ -158,12 +158,23 @@ LOG
 
     class SampleErrorSub < SampleError; end
     class SampleErrorSubSub < SampleErrorSub; end
-    SampleError.after_logging(:blah) { @blah = 101 }
+    SampleError.after_logging(:blah) do 
+      self.attributes[:abc] = 100
+      @blah = 101
+    end
     def test_before_logging
       e = SampleErrorSubSub.new(m: 'foo')
       assert !e.after_logging_blocks[:blah].nil?
       e.logging
+      assert_equal e.attributes[:abc], 100
       assert_equal e.instance_variable_get(:@blah), 101
+    end
+    class SampleErrorMightHappen < SampleErrorSub
+      def it_might_happen?; true end
+    end
+    def test_might_happen
+      e = SampleErrorMightHappen.new('fbar')
+      assert !e.report?
     end
   end
 end

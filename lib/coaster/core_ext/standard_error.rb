@@ -102,8 +102,18 @@ class StandardError
   def code;         attributes[:code] || status end
   def code=(value); attributes[:code] = value end
   def title;        attributes[:title] || self.class.title end
-  def report?;      attributes.key?(:report) ? attributes[:report] : self.class.report? end
-  def intentional?; attributes.key?(:intentional) ? attributes[:intentional] : self.class.intentional? end
+  def it_might_happen?;      attributes[:it] == :might_happen      end
+  def it_should_not_happen?; attributes[:it] == :should_not_happen end
+  def report?
+    return attributes[:report] if attributes.key?(:report)
+    return false if it_might_happen?
+    self.class.report?
+  end
+  def intentional? # not logging in test
+    return attributes[:intentional] if attributes.key?(:intentional)
+    return true if it_should_not_happen?
+    self.class.intentional?
+  end
   def object;       attributes[:object] || attributes[:obj] end
   alias_method :obj, :object
 
