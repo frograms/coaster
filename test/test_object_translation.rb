@@ -37,6 +37,7 @@ module Coaster
     def test_translation_sub
       assert_equal 'Coaster SampleObject Title (class.Coaster.SampleObject.title)', SampleObject._translate('.title')
       assert_equal 'Coaster SampleObject Title (class.Coaster.SampleObject.title)', SampleObject._translate(:title)
+      assert_nil SampleObject._translate(:title).instance_variable_get(:@missing)
     end
 
     def test_translation_with_key
@@ -46,6 +47,7 @@ module Coaster
     def test_translation_inheritance
       assert_equal 'Coaster SampleObject Translated', Inherited._translate
       assert_equal 'Coaster SampleObject Title (class.Coaster.Inherited.title)', Inherited._translate(:title)
+      assert Inherited._translate.instance_variable_get(:@missing)
     end
 
     def test_interpolation

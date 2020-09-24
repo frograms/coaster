@@ -4,7 +4,7 @@ class Object
   class << self
     def _translate(*args)
       options = args.last.is_a?(Hash) ? args.pop : {}
-      options.merge!(_translate_params)
+      options = _translate_params.merge(options)
       options = options.to_hash.symbolize_keys!
 
       key = args.shift
@@ -45,7 +45,10 @@ class Object
 
         if key_class.superclass == Object || key_class == Object
           return options[:description] if options[:description].present?
-          Coaster.logger && Coaster.logger.warn(result)
+          if Coaster.logger 
+            Coaster.logger.warn(result)
+            Coaster.logger.info(backtrace.join("\n"))
+          end
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
           msg = missing.message
@@ -61,6 +64,7 @@ class Object
         result = result.dup if result.frozen?
         result.instance_variable_set(:@translated, true)
         result.instance_variable_set(:@tkey, options[:tkey])
+        result.instance_variable_set(:@missing, options[:original_missing])
         result
       end
     end
@@ -78,16 +82,7 @@ class Object
   def _translate(*args)
     options = (args.last.is_a?(Hash) ? args.pop : {}).with_indifferent_access
     key = args.shift || (respond_to?(:tkey) ? tkey : nil)
-
-    if respond_to?(:description) && description.present? && description != 'false' && description != self.class.name
-      if !key.is_a?(String) && key != :force
-        desc = description
-        return desc unless desc.instance_variable_get(:@raw)
-      end
-      options.merge!(description: description)
-    end
-
-    options.merge!(_translate_params)
+    options = _translate_params.merge(options)
     self.class._translate(key, *args, options)
   end
 

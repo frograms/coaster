@@ -12,7 +12,7 @@ class StandardError
 
     def title
       t = _translate('.title')
-      t.instance_variable_defined?(:@missing) ? nil : t
+      t.instance_variable_get(:@missing) ? nil : t
     end
 
     def before_logging(name, &block)
@@ -117,18 +117,25 @@ class StandardError
   def object;       attributes[:object] || attributes[:obj] end
   alias_method :obj, :object
 
-  # description is user friendly messages, do not use error's message
+  # description is user friendly message as a attribute, do not use error's message
   # error message is not user friendly in many cases.
   def description
-    dsc = attributes[:description] || attributes[:desc]
-    return dsc if dsc
-    msg = safe_message.dup
-    msg.instance_variable_set(:@raw, true)
-    msg
+    attributes[:description] || attributes[:desc]
   end
   alias_method :desc, :description
 
-  # more user friendly messages
+  def _translate(*args)
+    return description if description.present?
+    super
+  end
+
+  # user friendly message, for overid
+  def user_message
+    return description if description.present?
+    _translate
+  end
+
+  # another user friendly messages
   def descriptions
     return attributes[:descriptions] if attributes[:descriptions]
     attributes[:descriptions] = {}

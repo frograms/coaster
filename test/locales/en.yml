@@ -1,6 +1,7 @@
 en:
   class:
-    StandardError: 'standard error translation'
+    StandardError: 
+      self: 'standard error translation'
     Coaster:
       self: 'Coaster Translated'
       SampleObject:
