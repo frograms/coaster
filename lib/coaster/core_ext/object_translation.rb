@@ -46,8 +46,8 @@ class Object
         if key_class.superclass == Object || key_class == Object
           return options[:description] if options[:description].present?
           if Coaster.logger 
-            Coaster.logger.warn(result)
-            Coaster.logger.info(backtrace.join("\n"))
+            Coaster.logger.info(result)
+            Coaster.logger.debug(caller.join("\n"))
           end
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
