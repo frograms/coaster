@@ -39,16 +39,16 @@ module Coaster
         raise ExampleError, {wat: 'cha'}
       end
     rescue => e
-      assert_equal e.to_hash['wat'], 'cha'
-      assert_equal e.to_hash['type'], 'Coaster::TestStandardError::ExampleError'
-      assert_equal e.to_hash['status'], 20
-      assert_equal e.to_hash['http_status'], 500
-      assert_equal e.to_hash['message'], 'Test sample error'
-      assert_equal e.to_hash['cause']['frog'], 'rams'
-      assert_equal e.to_hash['cause']['type'], 'Coaster::TestStandardError::SampleError'
-      assert_equal e.to_hash['cause']['status'], 10
-      assert_equal e.to_hash['cause']['http_status'], 500
-      assert_equal e.to_hash['cause']['message'], 'Test sample error'
+      assert_equal 'cha', e.to_hash['wat']
+      assert_equal 'Coaster::TestStandardError::ExampleError', e.to_hash['type']
+      assert_equal 20, e.to_hash['status']
+      assert_equal 500, e.to_hash['http_status']
+      assert_equal 'Test sample error', e.to_hash['message']
+      assert_equal 'rams', e.to_hash['cause']['frog']
+      assert_equal 'Coaster::TestStandardError::SampleError', e.to_hash['cause']['type']
+      assert_equal 10, e.to_hash['cause']['status']
+      assert_equal 500, e.to_hash['cause']['http_status']
+      assert_equal 'Test sample error', e.to_hash['cause']['message']
     end
 
     def test_cause_attributes
@@ -58,9 +58,9 @@ module Coaster
         raise ExampleError, {wat: 'cha'}
       end
     rescue => e
-      assert_equal e.cause.attr['frog'], 'rams'
-      assert_equal e.attr['frog'], 'rams'
-      assert_equal e.attr['wat'], 'cha'
+      assert_equal 'rams', e.cause.attr['frog']
+      assert_equal 'rams', e.attr['frog']
+      assert_equal 'cha', e.attr['wat']
     end
 
     def test_to_detail
@@ -94,13 +94,13 @@ LOG
     def test_translation
       raise SampleError, {tkey: '.test'}
     rescue => e
-      assert_equal e._translate, 'Test this translation'
+      assert_equal 'Test this translation', e._translate
     end
 
     def test_title
       raise SampleError, 'foobar'
     rescue => e
-      assert_equal e.title, 'Test this title'
+      assert_equal 'Test this title', e.title
     end
 
     def test_title_missing
@@ -129,31 +129,31 @@ LOG
       begin
         root_cause_sample3
       rescue => e
-        assert_equal e.root_cause.message, 'a'
+        assert_equal 'a', e.root_cause.message
       end
     end
 
     def test_raven_notes
       raise SampleError, m: 'foofoo', something: 'other'
     rescue => e
-      assert_equal e.notes(the_other: 'something')[:extra][:something], 'other'
-      assert_equal e.notes(the_other: 'something')[:extra][:the_other], 'something'
+      assert_equal 'other', e.notes(the_other: 'something')[:extra][:something]
+      assert_equal 'something', e.notes(the_other: 'something')[:extra][:the_other]
     end
 
     def test_to_hash
       aa # raise NameError
     rescue => e
-      assert_equal e.to_hash['type'], 'NameError'
-      assert_equal e.to_hash['status'], 999999
-      assert_equal e.to_hash['http_status'], 500
-      assert e.to_hash['message'] =~ /undefined local variable or method `aa'/
+      assert_equal 'NameError', e.to_hash['type']
+      assert_equal 999999, e.to_hash['status']
+      assert_equal 500, e.to_hash['http_status']
+      assert_match /undefined local variable or method `aa'/, e.to_hash['message']
     end
 
     def test_descriptions
       raise SampleError
     rescue => e
       e.descriptions.merge!(a: 1)
-      assert_equal e.descriptions['a'], 1
+      assert_equal 1, e.descriptions['a']
     end
 
     class SampleErrorSub < SampleError; end
@@ -168,8 +168,8 @@ LOG
       e = SampleErrorSubSub.new(m: 'foo')
       assert !e.after_logging_blocks[:blah].nil?
       e.logging
-      assert_equal e.attributes[:abc], 100
-      assert_equal e.instance_variable_get(:@blah), 101
+      assert_equal 100, e.attributes[:abc]
+      assert_equal 101, e.instance_variable_get(:@blah)
     end
     class SampleErrorMightHappen < SampleErrorSub
       def it_might_happen?; true end
