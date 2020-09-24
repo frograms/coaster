@@ -21,7 +21,7 @@ class StandardError
     end
     def before_logging_blocks
       @before_logging_blocks ||= {}
-      superclass <= StandardError ? superclass.after_logging_blocks.merge(@before_logging_blocks) : @before_logging_blocks
+      superclass <= StandardError ? superclass.before_logging_blocks.merge(@before_logging_blocks) : @before_logging_blocks
     end
 
     def after_logging(name, &block)
@@ -204,10 +204,9 @@ class StandardError
   def logging(options = {})
     before_logging_blocks.values.each { |blk| instance_exec &blk }
 
-    return unless report?
     logger = nil
     if defined?(Rails)
-      return if Rails.env.test? && intentional?
+      return if Rails.env.test? && (intentional? || !report?)
       logger = Rails.logger 
     end
     logger = options[:logger] || Coaster.logger || logger
@@ -228,7 +227,8 @@ class StandardError
     else
       logger.error(msg)
     end
-
+    msg
+  ensure
     after_logging_blocks.values.each { |blk| instance_exec &blk }
   end
 end

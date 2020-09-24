@@ -157,7 +157,9 @@ LOG
     end
 
     class SampleErrorSub < SampleError; end
-    class SampleErrorSubSub < SampleErrorSub; end
+    class SampleErrorSubSub < SampleErrorSub
+      def it_might_happen?; true end
+    end
     SampleError.after_logging(:blah) do 
       self.attributes[:abc] = 100
       @blah = 101
