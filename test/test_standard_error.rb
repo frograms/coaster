@@ -27,14 +27,14 @@ module Coaster
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
-      assert_nil e.title
+      assert_equal 'standard error title', e.title
       e = StandardError.new(m: 'foo', desc: 'bar')
       assert_equal 'foo', e.message
       assert_equal 'bar', e.description
       assert_equal 'bar', e.desc
       assert_equal 'bar', e._translate
       assert_equal 'bar', e.user_message
-      assert_nil e.title
+      assert_equal 'standard error title', e.title
     end
 
     def test_no_translation_class
@@ -44,14 +44,14 @@ module Coaster
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
-      assert_nil e.title
+      assert_equal 'standard error title', e.title
       e = UntitledError.new(m: 'foo', desc: 'bar')
       assert_equal 'foo', e.message
       assert_equal 'bar', e.description
       assert_equal 'bar', e.desc
       assert_equal 'bar', e._translate
       assert_equal 'bar', e.user_message
-      assert_nil e.title
+      assert_equal 'standard error title', e.title
     end
 
     def test_with_translation_class
@@ -157,7 +157,7 @@ LOG
     def test_title_missing
       raise UntitledError, 'untitled'
     rescue => e
-      assert_nil e.title
+      assert_equal 'standard error title', e.title
     end
 
     def root_cause_sample1

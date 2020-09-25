@@ -9,11 +9,7 @@ class StandardError
     def http_status;  500 end
     def report?;      true end
     def intentional?; false end
-
-    def title
-      t = _translate('.title')
-      t.instance_variable_get(:@missing) ? nil : t
-    end
+    def title; _translate('.title') end
 
     def before_logging(name, &block)
       @before_logging_blocks ||= {}

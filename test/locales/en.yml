@@ -2,6 +2,7 @@ en:
   class:
     StandardError: 
       self: 'standard error translation'
+      title: 'standard error title'
     Coaster:
       self: 'Coaster Translated'
       SampleObject:
