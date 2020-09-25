@@ -5,7 +5,7 @@ require 'active_support/core_ext/string'
 require 'active_support/core_ext/hash/slice'
 
 module Coaster
-  mattr_accessor :logger
+  mattr_writer   :logger
   mattr_writer   :default_fingerprint
 
   DEFAULT_FINGERPRINT = [:default, :class].freeze
@@ -18,6 +18,16 @@ module Coaster
     def default_fingerprint
       @@default_fingerprint ||= DEFAULT_FINGERPRINT
     end
+
+    def logger
+      return @@logger if defined?(@@logger)
+      return Rails.logger if defined?(Rails)
+      nil
+    end
+  end
+
+  def logger
+    self.class.logger
   end
 end
 

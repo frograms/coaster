@@ -211,12 +211,15 @@ class StandardError
   def logging(options = {})
     before_logging_blocks.values.each { |blk| instance_exec &blk }
 
-    logger = nil
-    if defined?(Rails)
-      return if Rails.env.test? && (intentional? || !report?)
-      logger = Rails.logger 
+    if !report? || intentional?
+      if defined?(Rails)
+        return if Rails.env.test?
+      else
+        return
+      end
     end
-    logger = options[:logger] || Coaster.logger || logger
+
+    logger = options[:logger] || Coaster.logger
     return unless logger
 
     cl = options[:cleaner] || cleaner
