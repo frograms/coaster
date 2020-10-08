@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'i18n', '>= 1.0'
   s.add_dependency 'rake', '>= 10.0'
-  s.add_dependency 'activesupport', '>= 3.0'
+  s.add_dependency 'activesupport', '>= 6.0.3.1'
   s.add_dependency 'attr_extras', '~> 5.2'
 
   s.add_development_dependency 'bundler', '~> 1.12'
