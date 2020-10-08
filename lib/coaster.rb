@@ -20,7 +20,7 @@ module Coaster
     end
 
     def logger
-      return @@logger if defined?(@@logger)
+      return @@logger if defined?(@@logger) && @@logger
       return Rails.logger if defined?(Rails)
       nil
     end
