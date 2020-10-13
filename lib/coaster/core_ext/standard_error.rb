@@ -57,6 +57,7 @@ class StandardError
       msg = hash.delete(:m)
       msg = hash.delete(:msg) || msg
       msg = hash.delete(:message) || msg
+      hash[:description] ||= hash.delete(:desc) if hash[:desc].present?
       @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
       @tags = hash.delete(:tags) || hash.delete(:tag)
       @level = hash.delete(:level) || hash.delete(:severity) || @level
@@ -151,13 +152,6 @@ class StandardError
       end
     end
     hash
-  end
-
-  def _translate_params
-    attributes.merge(
-      type: self.class.name, status: status,
-      http_status: http_status, message: message
-    )
   end
 
   def to_json

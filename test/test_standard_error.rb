@@ -27,6 +27,7 @@ module Coaster
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
+      assert_equal 'standard error translation / asdf', e.to_s
       assert_equal 'standard error title', e.title
       e = StandardError.new(m: 'foo', desc: 'bar')
       assert_equal 'foo', e.message
@@ -35,6 +36,7 @@ module Coaster
       assert_equal 'bar', e._translate
       assert_equal 'bar', e.user_message
       assert_equal 'standard error title', e.title
+      assert_equal 'bar / foo', e.to_s
     end
 
     def test_no_translation_class
@@ -44,6 +46,7 @@ module Coaster
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
+      assert_equal 'standard error translation / asdf', e.to_s
       assert_equal 'standard error title', e.title
       e = UntitledError.new(m: 'foo', desc: 'bar')
       assert_equal 'foo', e.message
@@ -51,6 +54,7 @@ module Coaster
       assert_equal 'bar', e.desc
       assert_equal 'bar', e._translate
       assert_equal 'bar', e.user_message
+      assert_equal 'bar / foo', e.to_s
       assert_equal 'standard error title', e.title
     end
 
@@ -61,6 +65,7 @@ module Coaster
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error', e.user_message
+      assert_equal 'Test sample error / asdf', e.to_s
       assert_equal 'Test this title', e.title
       e = SampleError.new(m: 'foo', desc: 'bar')
       assert_equal 'foo', e.message
@@ -68,6 +73,7 @@ module Coaster
       assert_equal 'bar', e.desc
       assert_equal 'bar', e._translate
       assert_equal 'bar', e.user_message
+      assert_equal 'bar / foo', e.to_s
       assert_equal 'Test this title', e.title
     end
 
