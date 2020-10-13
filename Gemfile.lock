@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coaster (1.1.1)
+    coaster (1.2.1)
       activesupport (>= 6.0.3.1)
       attr_extras (~> 5.2)
       i18n (>= 1.0)
@@ -34,6 +34,9 @@ GEM
     pry-byebug (3.9.0)
       byebug (~> 11.0)
       pry (~> 0.13.0)
+    pry-doc (1.1.0)
+      pry (~> 0.11)
+      yard (~> 0.9.11)
     pry-stack_explorer (0.5.1)
       binding_of_caller (~> 0.7)
       pry (~> 0.13)
@@ -47,6 +50,7 @@ GEM
     thread_safe (0.3.6)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
+    yard (0.9.25)
     zeitwerk (2.4.0)
 
 PLATFORMS
@@ -59,6 +63,7 @@ DEPENDENCIES
   mocha
   pry
   pry-byebug
+  pry-doc
   pry-stack_explorer
   shoulda
   shoulda-context

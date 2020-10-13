@@ -75,6 +75,14 @@ module Coaster
       assert_equal 'bar', e.user_message
       assert_equal 'bar / foo', e.to_s
       assert_equal 'Test this title', e.title
+      e = SampleError.new(tkey: 'sample.interpolation', value: 'blah')
+      assert_equal 'Test sample error', e.message
+      assert_nil e.description
+      assert_nil e.desc
+      assert_equal 'Sample Interpolation blah', e._translate
+      assert_equal 'Sample Interpolation blah', e.user_message
+      assert_equal 'Sample Interpolation blah / Test sample error', e.to_s
+      assert_equal 'Test this title', e.title
     end
 
     def test_message

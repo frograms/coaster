@@ -126,6 +126,10 @@ class StandardError
     super
   end
 
+  def _translate_params
+    attributes
+  end
+
   # user friendly message, for overid
   def user_message
     return description if description.present?

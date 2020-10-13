@@ -18,3 +18,4 @@ en:
           title: 'Test this title'
   sample:
     title: 'Sample Title'
+    interpolation: 'Sample Interpolation %{value}'
