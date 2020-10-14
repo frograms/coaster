@@ -91,11 +91,11 @@ module Coaster
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error (developer message)', e.user_message
       assert_equal 'Test this title', e.title
-      e = SampleError.new(dm: 'developer message')
+      e = SampleError.new(m: 'developer message', desc: :translate)
       assert_equal "Test sample error (developer message)", e.to_s
       assert_equal "Test sample error (developer message)", e.message
-      assert_nil e.description
-      assert_nil e.desc
+      assert_equal "Test sample error", e.description
+      assert_equal "Test sample error", e.desc
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error', e.user_message
       assert_equal 'Test this title', e.title
