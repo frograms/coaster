@@ -27,7 +27,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
-      assert_equal 'standard error translation', e.user_message
+      assert_equal 'standard error translation (developer message)', e.user_message
       assert_equal 'standard error title', e.title
       e = StandardError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s
@@ -46,7 +46,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
-      assert_equal 'standard error translation', e.user_message
+      assert_equal 'standard error translation (developer message)', e.user_message
       assert_equal 'standard error title', e.title
       e = UntitledError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s
@@ -55,6 +55,14 @@ module Coaster
       assert_equal 'user message', e.desc
       assert_equal 'user message', e._translate
       assert_equal 'user message', e.user_message
+      assert_equal 'standard error title', e.title
+      e = UntitledError.new(tkey: 'no.translation')
+      assert_equal "translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.to_s
+      assert_equal "translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.message
+      assert_nil e.description
+      assert_nil e.desc
+      assert_equal 'translation missing: en.no.translation', e._translate
+      assert_equal "translation missing: en.no.translation", e.user_message
       assert_equal 'standard error title', e.title
     end
 
@@ -65,7 +73,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error', e.user_message
+      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new(beet: 'apple')
       assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
@@ -73,7 +81,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error', e.user_message
+      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new('developer message')
       assert_equal "Test sample error (developer message)", e.to_s
@@ -81,7 +89,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error', e.user_message
+      assert_equal 'Test sample error (developer message)', e.user_message
       assert_equal 'Test this title', e.title
       e = SampleError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s
