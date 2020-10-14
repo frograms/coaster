@@ -97,7 +97,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
+      assert_equal 'Test sample error', e.user_message
       assert_equal 'Test this title', e.title
       e = SampleError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s

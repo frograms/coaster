@@ -133,7 +133,7 @@ class StandardError
   # user friendly message, for overid
   def user_message
     return description if description.present?
-    return _translate  if tkey.present?
+    return _translate if tkey.present? || dev_message.present?
     "#{_translate} (#{to_origin_s})"
   end
 
