@@ -58,6 +58,7 @@ class StandardError
       msg = hash.delete(:msg) || msg
       msg = hash.delete(:message) || msg
       hash[:description] ||= hash.delete(:desc) if hash[:desc].present?
+      hash[:dev_message] ||= hash.delete(:dm) if hash[:dm].present?
       @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
       @tags = hash.delete(:tags) || hash.delete(:tag)
       @level = hash.delete(:level) || hash.delete(:severity) || @level
@@ -115,10 +116,10 @@ class StandardError
 
   # description is user friendly message as a attribute, do not use error's message
   # error message is not user friendly in many cases.
-  def description
-    attributes[:description] || attributes[:desc]
-  end
+  def description; attributes[:description] || attributes[:desc] end
   alias_method :desc, :description
+  def dev_message; attributes[:dev_message] end
+  alias_method :dm, :dev_message
 
   def _translate(*args)
     return description if description.present?
@@ -132,10 +133,8 @@ class StandardError
   # user friendly message, for overid
   def user_message
     return description if description.present?
-    if tkey.present?
-      return _translate 
-    end
-    message
+    return _translate  if tkey.present?
+    "#{_translate} (#{to_origin_s})"
   end
 
   # another user friendly messages
@@ -151,7 +150,7 @@ class StandardError
   alias to_origin_s to_s
 
   def to_s
-    "#{_translate} (#{to_origin_s})"
+    "#{_translate} (#{dev_message || to_origin_s})"
   end
 
   def to_hash
