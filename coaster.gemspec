@@ -23,10 +23,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'attr_extras', '~> 5.2'
 
   s.add_development_dependency 'bundler'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'pry-stack_explorer'
-  s.add_development_dependency 'pry-byebug'
-  s.add_development_dependency 'pry-doc'
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'mocha'
   s.add_development_dependency 'shoulda'

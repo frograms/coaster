@@ -62,19 +62,18 @@ class StandardError
       @tags = hash.delete(:tags) || hash.delete(:tag)
       @level = hash.delete(:level) || hash.delete(:severity) || @level
       @tkey = hash.delete(:tkey)
-      msg = cause.message if msg.nil? && cause
       @attributes.merge!(hash)
     when String then
       msg = message
     when FalseClass, NilClass then
-      msg = ''
+      msg = nil
     else
       msg = message
     end
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
     @tags = {} unless @tags.is_a?(Hash)
-    msg ||= self.class._translate
+    msg = cause.message if msg.blank? && cause
     super(msg)
   end
 
@@ -141,6 +140,15 @@ class StandardError
     return attributes[:descriptions] if attributes[:descriptions]
     attributes[:descriptions] = {}
     attributes[:descriptions]
+  end
+
+  # https://github.com/getsentry/sentry-ruby/blob/fbbc7a51ed10684d0e8b7bd9d2a1b65a7351c9ef/lib/raven/event.rb#L162
+  # sentry message use `to_s` method
+  # https://ruby-doc.org/core-2.5.1/Exception.html#method-i-to_s
+  alias to_origin_s to_s
+
+  def to_s
+    "#{_translate}\n#{to_origin_s}"
   end
 
   def to_hash

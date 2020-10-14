@@ -66,17 +66,4 @@ class StandardError
     capture(options)
     just_logging(options)
   end
-
-  # https://github.com/getsentry/sentry-ruby/blob/fbbc7a51ed10684d0e8b7bd9d2a1b65a7351c9ef/lib/raven/event.rb#L162
-  # sentry use `to_s` as a message
-  alias to_origin_s to_s
-  def message
-    to_origin_s
-  end
-
-  def to_s
-    str = super # https://ruby-doc.org/core-2.5.1/Exception.html#method-i-to_s
-    str = "#{user_message} / #{str}" if user_message.present?
-    str
-  end
 end
