@@ -22,16 +22,16 @@ module Coaster
 
     def test_standard_messages
       e = StandardError.new('developer message')
-      assert_equal "standard error translation\ndeveloper message", e.to_s
-      assert_equal "standard error translation\ndeveloper message", e.message
+      assert_equal "standard error translation (developer message)", e.to_s
+      assert_equal "standard error translation (developer message)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
       assert_equal 'standard error title', e.title
       e = StandardError.new(m: 'developer message', desc: 'user message')
-      assert_equal "user message\ndeveloper message", e.to_s
-      assert_equal "user message\ndeveloper message", e.message
+      assert_equal "user message (developer message)", e.to_s
+      assert_equal "user message (developer message)", e.message
       assert_equal 'user message', e.description
       assert_equal 'user message', e.desc
       assert_equal 'user message', e._translate
@@ -41,16 +41,16 @@ module Coaster
 
     def test_no_translation_class
       e = UntitledError.new('developer message')
-      assert_equal "standard error translation\ndeveloper message", e.to_s
-      assert_equal "standard error translation\ndeveloper message", e.message
+      assert_equal "standard error translation (developer message)", e.to_s
+      assert_equal "standard error translation (developer message)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
       assert_equal 'standard error translation', e.user_message
       assert_equal 'standard error title', e.title
       e = UntitledError.new(m: 'developer message', desc: 'user message')
-      assert_equal "user message\ndeveloper message", e.to_s
-      assert_equal "user message\ndeveloper message", e.message
+      assert_equal "user message (developer message)", e.to_s
+      assert_equal "user message (developer message)", e.message
       assert_equal 'user message', e.description
       assert_equal 'user message', e.desc
       assert_equal 'user message', e._translate
@@ -60,40 +60,40 @@ module Coaster
 
     def test_with_translation_class
       e = SampleError.new
-      assert_equal "Test sample error\nCoaster::TestStandardError::SampleError", e.to_s
-      assert_equal "Test sample error\nCoaster::TestStandardError::SampleError", e.message
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new(beet: 'apple')
-      assert_equal "Test sample error\nCoaster::TestStandardError::SampleError", e.to_s
-      assert_equal "Test sample error\nCoaster::TestStandardError::SampleError", e.message
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new('developer message')
-      assert_equal "Test sample error\ndeveloper message", e.to_s
-      assert_equal "Test sample error\ndeveloper message", e.message
+      assert_equal "Test sample error (developer message)", e.to_s
+      assert_equal "Test sample error (developer message)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error', e.user_message
       assert_equal 'Test this title', e.title
       e = SampleError.new(m: 'developer message', desc: 'user message')
-      assert_equal "user message\ndeveloper message", e.to_s
-      assert_equal "user message\ndeveloper message", e.message
+      assert_equal "user message (developer message)", e.to_s
+      assert_equal "user message (developer message)", e.message
       assert_equal 'user message', e.description
       assert_equal 'user message', e.desc
       assert_equal 'user message', e._translate
       assert_equal 'user message', e.user_message
       assert_equal 'Test this title', e.title
       e = SampleError.new(tkey: 'sample.interpolation', value: 'blah')
-      assert_equal "Sample Interpolation blah\nCoaster::TestStandardError::SampleError", e.to_s
-      assert_equal "Sample Interpolation blah\nCoaster::TestStandardError::SampleError", e.message
+      assert_equal "Sample Interpolation blah (Coaster::TestStandardError::SampleError)", e.to_s
+      assert_equal "Sample Interpolation blah (Coaster::TestStandardError::SampleError)", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Sample Interpolation blah', e._translate
@@ -104,7 +104,7 @@ module Coaster
     def test_message
       raise SampleError, {m: 'beer is proof'}
     rescue => e
-      assert_equal "Test sample error\nbeer is proof", e.message
+      assert_equal "Test sample error (beer is proof)", e.message
     end
 
     def test_attributes
@@ -124,12 +124,12 @@ module Coaster
       assert_equal 'Coaster::TestStandardError::ExampleError', e.to_hash['type']
       assert_equal 20, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "Test example error\nTest sample error\n#{SampleError.name}", e.to_hash['message']
+      assert_equal "Test example error (Test sample error (#{SampleError.name}))", e.to_hash['message']
       assert_equal 'rams', e.to_hash['cause']['frog']
       assert_equal 'Coaster::TestStandardError::SampleError', e.to_hash['cause']['type']
       assert_equal 10, e.to_hash['cause']['status']
       assert_equal 500, e.to_hash['cause']['http_status']
-      assert_equal "Test sample error\nCoaster::TestStandardError::SampleError", e.to_hash['cause']['message']
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_hash['cause']['message']
     end
 
     def test_cause_attributes
@@ -153,9 +153,7 @@ module Coaster
     rescue => e
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Test example error
-		Test sample error
-		Coaster::TestStandardError::SampleError
+	MESSAGE: Test example error (Test sample error (Coaster::TestStandardError::SampleError))
 	@fingerprint: []
 	@tags: {}
 	@level: \"error\"
@@ -163,8 +161,7 @@ module Coaster
 	@tkey: nil
 	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
-		MESSAGE: Test sample error
-			Coaster::TestStandardError::SampleError
+		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
 		@fingerprint: []
 		@tags: {}
 		@level: \"error\"
@@ -213,7 +210,7 @@ LOG
       begin
         root_cause_sample3
       rescue => e
-        assert_equal "standard error translation\na", e.root_cause.message
+        assert_equal "standard error translation (a)", e.root_cause.message
       end
     end
 

@@ -148,7 +148,7 @@ class StandardError
   alias to_origin_s to_s
 
   def to_s
-    "#{_translate}\n#{to_origin_s}"
+    "#{_translate} (#{to_origin_s})"
   end
 
   def to_hash
