@@ -22,8 +22,8 @@ module Coaster
 
     def test_standard_messages
       e = StandardError.new('developer message')
-      assert_equal "standard error translation (developer message)", e.to_s
-      assert_equal "standard error translation (developer message)", e.message
+      assert_equal "developer message", e.to_s
+      assert_equal "developer message", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
@@ -41,8 +41,8 @@ module Coaster
 
     def test_no_translation_class
       e = UntitledError.new('developer message')
-      assert_equal "standard error translation (developer message)", e.to_s
-      assert_equal "standard error translation (developer message)", e.message
+      assert_equal "developer message", e.to_s
+      assert_equal "developer message", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
@@ -68,8 +68,8 @@ module Coaster
 
     def test_with_translation_class
       e = SampleError.new
-      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
-      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.message
+      assert_equal "Coaster::TestStandardError::SampleError", e.to_s
+      assert_equal "Coaster::TestStandardError::SampleError", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
@@ -84,8 +84,8 @@ module Coaster
       assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new('developer message')
-      assert_equal "Test sample error (developer message)", e.to_s
-      assert_equal "Test sample error (developer message)", e.message
+      assert_equal "developer message", e.to_s
+      assert_equal "developer message", e.message
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
@@ -140,7 +140,7 @@ module Coaster
       assert_equal 'Coaster::TestStandardError::ExampleError', e.to_hash['type']
       assert_equal 20, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "Test example error (Test sample error (#{SampleError.name}))", e.to_hash['message']
+      assert_equal "Test example error (Coaster::TestStandardError::ExampleError) {Test sample error (Coaster::TestStandardError::SampleError)}", e.to_hash['message']
       assert_equal 'rams', e.to_hash['cause']['frog']
       assert_equal 'Coaster::TestStandardError::SampleError', e.to_hash['cause']['type']
       assert_equal 10, e.to_hash['cause']['status']
@@ -152,9 +152,10 @@ module Coaster
       begin
         raise SampleError, {frog: 'rams'}
       rescue => e
-        raise ExampleError, {wat: 'cha'}
+        raise ExampleError, {m: 'abc', wat: 'cha'}
       end
     rescue => e
+      assert_equal 'Test example error (abc) {Test sample error (Coaster::TestStandardError::SampleError)}', e.message
       assert_equal 'rams', e.cause.attr['frog']
       assert_equal 'rams', e.attr['frog']
       assert_equal 'cha', e.attr['wat']
@@ -169,12 +170,13 @@ module Coaster
     rescue => e
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Test example error (Test sample error (Coaster::TestStandardError::SampleError))
+	MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) {Test sample error (Coaster::TestStandardError::SampleError)}
 	@fingerprint: []
 	@tags: {}
 	@level: \"error\"
 	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
 	@tkey: nil
+	@coaster: true
 	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
@@ -183,6 +185,7 @@ module Coaster
 		@level: \"error\"
 		@attributes: {\"frog\"=>\"rams\"}
 		@tkey: nil
+		@coaster: true
 		@raven: {}
 LOG
       assert_equal(detail, e.to_detail)
@@ -226,7 +229,7 @@ LOG
       begin
         root_cause_sample3
       rescue => e
-        assert_equal "standard error translation (a)", e.root_cause.message
+        assert_equal "a", e.root_cause.message
       end
     end
 

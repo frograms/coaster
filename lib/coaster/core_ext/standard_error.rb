@@ -53,6 +53,7 @@ class StandardError
       msg = message
       set_backtrace(message.backtrace)
     when Hash then
+      @coaster = true # coaster 확장을 사용한 에러임을 확인할 수 있음.
       hash = message.with_indifferent_access rescue message
       msg = hash.delete(:m)
       msg = hash.delete(:msg) || msg
@@ -63,6 +64,12 @@ class StandardError
       @level = hash.delete(:level) || hash.delete(:severity) || @level
       @tkey = hash.delete(:tkey)
       @attributes.merge!(hash)
+      if @attributes[:description] == :translate
+        @attributes.delete(:description)
+        @attributes[:description] = _translate
+      end
+      msg = "#{_translate} (#{msg || self.class.name})"
+      msg = "#{msg} {#{cause.message}}" if cause
     when String then
       msg = message
     when FalseClass, NilClass then
@@ -73,11 +80,7 @@ class StandardError
 
     @fingerprint = [] unless @fingerprint.is_a?(Array)
     @tags = {} unless @tags.is_a?(Hash)
-    if @attributes[:description] == :translate
-      @attributes.delete(:description)
-      @attributes[:description] = _translate 
-    end
-    msg = cause.message if msg.blank? && cause
+    msg = "{#{cause.message}}" if msg.blank? && cause
     super(msg)
   end
 
@@ -135,7 +138,8 @@ class StandardError
   def user_message
     return description if description.present?
     return _translate if tkey.present?
-    "#{_translate} (#{to_origin_s})"
+    return "#{_translate} (#{message})" unless defined?(@coaster)
+    message
   end
 
   # another user friendly messages
@@ -143,15 +147,6 @@ class StandardError
     return attributes[:descriptions] if attributes[:descriptions]
     attributes[:descriptions] = {}
     attributes[:descriptions]
-  end
-
-  # https://github.com/getsentry/sentry-ruby/blob/fbbc7a51ed10684d0e8b7bd9d2a1b65a7351c9ef/lib/raven/event.rb#L162
-  # sentry message use `to_s` method
-  # https://ruby-doc.org/core-2.5.1/Exception.html#method-i-to_s
-  alias to_origin_s to_s
-
-  def to_s
-    "#{_translate} (#{to_origin_s})"
   end
 
   def to_hash
