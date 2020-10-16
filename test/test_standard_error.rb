@@ -91,6 +91,14 @@ module Coaster
       assert_equal 'Test sample error', e._translate
       assert_equal 'Test sample error (developer message)', e.user_message
       assert_equal 'Test this title', e.title
+      e = SampleError.new(desc: 'user message')
+      assert_equal "user message (Coaster::TestStandardError::SampleError)", e.to_s
+      assert_equal "user message (Coaster::TestStandardError::SampleError)", e.message
+      assert_equal 'user message', e.description
+      assert_equal 'user message', e.desc
+      assert_equal 'user message', e._translate
+      assert_equal 'user message', e.user_message
+      assert_equal 'Test this title', e.title
       e = SampleError.new(m: 'developer message', desc: :translate)
       assert_equal "Test sample error (developer message)", e.to_s
       assert_equal "Test sample error (developer message)", e.message
@@ -176,7 +184,6 @@ module Coaster
 	@level: \"error\"
 	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
 	@tkey: nil
-	@coaster: true
 	@raven: {}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
@@ -185,7 +192,6 @@ module Coaster
 		@level: \"error\"
 		@attributes: {\"frog\"=>\"rams\"}
 		@tkey: nil
-		@coaster: true
 		@raven: {}
 LOG
       assert_equal(detail, e.to_detail)

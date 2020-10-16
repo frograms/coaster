@@ -136,8 +136,7 @@ class StandardError
 
   # user friendly message, for overid
   def user_message
-    return description if description.present?
-    return _translate if tkey.present?
+    return _translate if description.present? || tkey.present?
     return "#{_translate} (#{message})" unless defined?(@coaster)
     message
   end
@@ -172,7 +171,7 @@ class StandardError
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
-      if var.to_s.start_with?('@_')
+      if var.to_s.start_with?('@_') || var.to_s == '@coaster'
         next
       elsif var.to_s == '@spell_checker'
         next
