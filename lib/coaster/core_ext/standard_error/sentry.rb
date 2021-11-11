@@ -44,7 +44,7 @@ class StandardError
       scope.user.merge!(nt[:user] || {})
       scope.tags.merge!(nt[:tags])
       scope.extra.merge!(nt[:extra])
-      scope.fingerprint = raven_fingerprint
+      scope.set_fingerprint(raven_fingerprint)
     end
   rescue => e
     msg = "#{e.class.name}: #{e.message}"
