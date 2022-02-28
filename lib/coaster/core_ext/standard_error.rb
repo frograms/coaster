@@ -1,7 +1,9 @@
 require 'coaster/core_ext/object_translation'
+require 'pp'
 
 class StandardError
   cattr_accessor :cleaner, :cause_cleaner
+  cattr_accessor :to_log_detail_value, default: Proc.new{|val| val.inspect}
 
   class << self
     def status; 999999 end # Unknown
@@ -177,7 +179,7 @@ class StandardError
         next
       else
         val = instance_variable_get(var)
-        val = val.inspect rescue val.to_s
+        val = to_log_detail_value.call(val) rescue val.to_s
         lg += "\n\t#{var}: #{val}"
       end
     end

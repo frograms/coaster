@@ -2,6 +2,10 @@ require 'test_helper'
 require 'minitest/autorun'
 require 'coaster/core_ext/standard_error/raven'
 
+StandardError.to_log_detail_value = Proc.new do |val|
+  PP.pp(val, ''.dup, 79)[0...-1]
+end
+
 module Coaster
   class TestStandardError < Minitest::Test
     class SampleError < StandardError
