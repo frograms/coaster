@@ -199,6 +199,8 @@ class StandardError
         val = instance_variable_get(var)
         val = detail_value_proc.call(val) rescue val.to_s
         lg += "\n\t#{var}: #{val}"
+      elsif var.to_s.start_with?('@__')
+        next
       else
         val = instance_variable_get(var)
         lg += "\n\t#{var}: #{self.class.detail_value_simple(val)}"
