@@ -3,15 +3,29 @@ require 'pp'
 
 class StandardError
   cattr_accessor :cleaner, :cause_cleaner
-  cattr_accessor :to_log_detail_value, default: Proc.new{|val| val.inspect}
+
+  DEFAULT_DETAIL_VARS = %i[@attributes @tkey @fingerprint @tags @level]
+  DEFAULT_DETAIL_VALUE_PROC = Proc.new{|val| val.inspect}
 
   class << self
+    attr_accessor :detail_value_proc
+
     def status; 999999 end # Unknown
     alias_method :code, :status
     def http_status;  500 end
     def report?;      true end
     def intentional?; false end
     def title; _translate('.title') end
+    def detail_vars; @detail_vars ||= DEFAULT_DETAIL_VARS.dup end
+    def detail_value_proc; @detail_value_proc ||= superclass.respond_to?(:detail_value_proc) ? superclass.detail_value_proc : DEFAULT_DETAIL_VALUE_PROC end
+    def detail_value_simple(val)
+      case val
+      when Array then val.map{|v| detail_value_simple(v)}
+      when Hash then Hash[val.map{|k,v| [k, detail_value_simple(v)]}]
+      when String, Numeric, TrueClass, FalseClass then val.to_s
+      else val.class.name
+      end
+    end
 
     def before_logging(name, &block)
       @before_logging_blocks ||= {}
@@ -169,18 +183,25 @@ class StandardError
     Oj.dump(to_hash.with_indifferent_access, mode: :compat)
   end
 
+  def detail_vars
+    (self.class.detail_vars + (attributes[:detail_vars] || [])).map(&:to_sym).compact.uniq
+  end
+
+  def detail_value_proc
+    attributes[:detail_value_proc] || self.class.detail_value_proc
+  end
+
   def to_detail
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
     instance_variables.each do |var|
-      if var.to_s.start_with?('@_') || var.to_s == '@coaster'
-        next
-      elsif var.to_s == '@spell_checker'
-        next
+      if detail_vars.include?(var)
+        val = instance_variable_get(var)
+        val = detail_value_proc.call(val) rescue val.to_s
+        lg += "\n\t#{var}: #{val}"
       else
         val = instance_variable_get(var)
-        val = to_log_detail_value.call(val) rescue val.to_s
-        lg += "\n\t#{var}: #{val}"
+        lg += "\n\t#{var}: #{self.class.detail_value_simple(val)}"
       end
     end
     if cause
@@ -209,6 +230,15 @@ class StandardError
     end.compact
   end
 
+  def cleaned_backtrace(options = {})
+    return unless backtrace
+    cl = options[:cleaner] || cleaner
+    return backtrace unless cl
+    bt = cl.clean(backtrace)
+    bt = bt[0..2] if intentional?
+    bt
+  end
+
   def logging(options = {})
     before_logging_blocks.values.each { |blk| instance_exec &blk }
 
@@ -223,12 +253,8 @@ class StandardError
     logger = options[:logger] || Coaster.logger
     return unless logger
 
-    cl = options[:cleaner] || cleaner
     msg = to_detail
-
-    if cl && backtrace
-      bt = cl.clean(backtrace)
-      bt = bt[0..2] if intentional?
+    if (bt = cleaned_backtrace(options))
       msg += "\tBACKTRACE:\n\t"
       msg += bt.join("\n\t")
     end

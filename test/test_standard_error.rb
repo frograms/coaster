@@ -2,7 +2,7 @@ require 'test_helper'
 require 'minitest/autorun'
 require 'coaster/core_ext/standard_error/raven'
 
-StandardError.to_log_detail_value = Proc.new do |val|
+StandardError.detail_value_proc = Proc.new do |val|
   PP.pp(val, ''.dup, 79)[0...-1]
 end
 
@@ -184,7 +184,10 @@ module Coaster
       begin
         raise SampleError, {frog: 'rams'}
       rescue => e
-        raise ExampleError, {wat: 'cha'}
+        err = ExampleError.new(wat: 'cha')
+        err.instance_variable_set(:@ins_var, [SampleError.new, {h: 1}])
+        err.instance_variable_set(:@ins_varr, {dd: 2})
+        raise err
       end
     rescue => e
       detail = <<-LOG
@@ -195,7 +198,10 @@ module Coaster
 	@level: \"error\"
 	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
 	@tkey: nil
+	@coaster: true
 	@raven: {}
+	@ins_var: [\"Coaster::TestStandardError::SampleError\", {:h=>\"1\"}]
+	@ins_varr: {:dd=>\"2\"}
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
 		@fingerprint: []
@@ -203,6 +209,7 @@ module Coaster
 		@level: \"error\"
 		@attributes: {\"frog\"=>\"rams\"}
 		@tkey: nil
+		@coaster: true
 		@raven: {}
 LOG
       assert_equal(detail, e.to_detail)
