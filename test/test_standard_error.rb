@@ -193,24 +193,24 @@ module Coaster
       detail = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
 	MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) {Test sample error (Coaster::TestStandardError::SampleError)}
-	@fingerprint: []
-	@tags: {}
-	@level: \"error\"
 	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
-	@tkey: nil
 	@coaster: true
-	@raven: {}
+	@fingerprint: []
 	@ins_var: [\"Coaster::TestStandardError::SampleError\", {:h=>\"1\"}]
 	@ins_varr: {:dd=>\"2\"}
+	@level: \"error\"
+	@raven: {}
+	@tags: {}
+	@tkey: nil
 	CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
-		@fingerprint: []
-		@tags: {}
-		@level: \"error\"
 		@attributes: {\"frog\"=>\"rams\"}
-		@tkey: nil
 		@coaster: true
+		@fingerprint: []
+		@level: \"error\"
 		@raven: {}
+		@tags: {}
+		@tkey: nil
 LOG
       assert_equal(detail, e.to_detail)
     end

@@ -194,7 +194,7 @@ class StandardError
   def to_detail
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
-    instance_variables.each do |var|
+    instance_variables.sort.each do |var|
       if detail_vars.include?(var)
         val = instance_variable_get(var)
         val = detail_value_proc.call(val) rescue val.to_s

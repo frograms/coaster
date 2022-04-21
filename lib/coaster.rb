@@ -32,4 +32,4 @@ module Coaster
 end
 
 require 'coaster/core_ext'
-require 'coaster/backtrace_cleaner'
+require 'coaster/rails_ext'
