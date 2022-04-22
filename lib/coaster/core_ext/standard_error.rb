@@ -212,10 +212,11 @@ class StandardError
       lg += bt.join("\n\t\t")
     end
     if cause
-      if (options[:_depth] || 0) < 4
+      _depth = options[:_depth] || 0
+      if _depth < 4
         if cause.respond_to?(:to_detail)
           lg += "\n\tCAUSE: "
-          lg += cause.to_detail(options.merge(_depth: (options[:_depth] || 0) + 1)).strip.gsub(/\n/, "\n\t")
+          lg += cause.to_detail(options.merge(_depth: _depth + 1)).strip.gsub(/\n/, "\n\t")
         else
           lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
           lg += "\n\tBACKTRACE:\n\t\t#{cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first].join("\n\t\t")}"
