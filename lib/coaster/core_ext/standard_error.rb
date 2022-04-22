@@ -192,7 +192,7 @@ class StandardError
     attributes[:detail_value_proc] || self.class.detail_value_proc
   end
 
-  def to_detail(options = {}, depth: 0)
+  def to_detail(options = {})
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
     instance_variables.sort.each do |var|
@@ -212,10 +212,10 @@ class StandardError
       lg += bt.join("\n\t\t")
     end
     if cause
-      if depth < 4
+      if (options[:_depth] || 0) < 4
         if cause.respond_to?(:to_detail)
           lg += "\n\tCAUSE: "
-          lg += cause.to_detail(options, depth: depth + 1).strip.gsub(/\n/, "\n\t")
+          lg += cause.to_detail(options.merge(_depth: (options[:_depth] || 0) + 1)).strip.gsub(/\n/, "\n\t")
         else
           lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
           lg += "\n\tBACKTRACE:\n\t\t#{cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first].join("\n\t\t")}"

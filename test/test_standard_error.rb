@@ -162,7 +162,7 @@ module Coaster
       assert_equal 'Coaster::TestStandardError::ExampleError', e.to_hash['type']
       assert_equal 20, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "Test example error (Coaster::TestStandardError::ExampleError) {Test sample error (Coaster::TestStandardError::SampleError)}", e.to_hash['message']
+      assert_equal "Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}", e.to_hash['message']
       assert_equal 'rams', e.to_hash['cause']['frog']
       assert_equal 'Coaster::TestStandardError::SampleError', e.to_hash['cause']['type']
       assert_equal 10, e.to_hash['cause']['status']
