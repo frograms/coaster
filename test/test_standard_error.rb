@@ -6,6 +6,9 @@ StandardError.detail_value_proc = Proc.new do |val|
   PP.pp(val, ''.dup, 79)[0...-1]
 end
 
+StandardError.cleaner = ActiveSupport::BacktraceCleaner.new
+StandardError.cause_cleaner = StandardError.cleaner
+
 module Coaster
   class TestStandardError < Minitest::Test
     class SampleError < StandardError
@@ -174,7 +177,7 @@ module Coaster
         raise ExampleError, {m: 'abc', wat: 'cha'}
       end
     rescue => e
-      assert_equal 'Test example error (abc) {Test sample error (Coaster::TestStandardError::SampleError)}', e.message
+      assert_equal 'Test example error (abc) cause{Test sample error (Coaster::TestStandardError::SampleError)}', e.message
       assert_equal 'rams', e.cause.attr['frog']
       assert_equal 'rams', e.attr['frog']
       assert_equal 'cha', e.attr['wat']
@@ -190,9 +193,10 @@ module Coaster
         raise err
       end
     rescue => e
-      detail = <<-LOG
+      detail = e.to_detail
+      detail_front = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) {Test sample error (Coaster::TestStandardError::SampleError)}
+	MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
 	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
 	@coaster: true
 	@fingerprint: []
@@ -202,17 +206,54 @@ module Coaster
 	@raven: {}
 	@tags: {}
 	@tkey: nil
-	CAUSE: [Coaster::TestStandardError::SampleError] status:10
+	BACKTRACE:
+		/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:193:in `rescue in test_to_detail'
+		/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:187:in `test_to_detail'
+LOG
+      detail_cause_front = <<-LOG
+CAUSE: [Coaster::TestStandardError::SampleError] status:10
 		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
-		@attributes: {\"frog\"=>\"rams\"}
+		@attributes: {"frog"=>"rams"}
 		@coaster: true
 		@fingerprint: []
-		@level: \"error\"
+		@level: "error"
 		@raven: {}
 		@tags: {}
 		@tkey: nil
+		BACKTRACE:
+			/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:188:in `test_to_detail'
 LOG
-      assert_equal(detail, e.to_detail)
+      assert detail.start_with?(detail_front)
+      cause_ix = (detail =~ /CAUSE/)
+      cause = detail[cause_ix..-1]
+      assert cause.start_with?(detail_cause_front)
+    end
+
+    def test_to_detail_with_depth
+      begin
+        begin
+          begin
+            begin
+              begin
+                raise SampleError
+              rescue => e
+                raise SampleError
+              end
+            rescue => e
+              raise SampleError
+            end
+          rescue => e
+            raise SampleError
+          end
+        rescue => e
+          raise SampleError
+        end
+      rescue => e
+        raise SampleError
+      end
+    rescue => e
+      detail = e.to_detail
+      assert detail =~ /and more causes/
     end
 
     def test_translation

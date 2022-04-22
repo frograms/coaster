@@ -1,4 +1,5 @@
 require 'coaster/core_ext/object_translation'
+require 'coaster/rails_ext/backtrace_cleaner'
 require 'pp'
 
 class StandardError
@@ -85,7 +86,7 @@ class StandardError
         @attributes[:description] = _translate
       end
       msg = "#{_translate} (#{msg || self.class.name})"
-      msg = "#{msg} {#{cause.message}}" if cause
+      msg = "#{msg} cause{#{cause.message}}" if cause
     when String then
       msg = message
     when FalseClass, NilClass then
@@ -191,7 +192,7 @@ class StandardError
     attributes[:detail_value_proc] || self.class.detail_value_proc
   end
 
-  def to_detail
+  def to_detail(options = {}, depth: 0)
     lg = "[#{self.class.name}] status:#{status}"
     lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
     instance_variables.sort.each do |var|
@@ -206,15 +207,21 @@ class StandardError
         lg += "\n\t#{var}: #{self.class.detail_value_simple(val)}"
       end
     end
+    if (bt = cleaned_backtrace(options))
+      lg += "\n\tBACKTRACE:\n\t\t"
+      lg += bt.join("\n\t\t")
+    end
     if cause
-      if cause.respond_to?(:to_detail)
-        lg += "\n\tCAUSE: "
-        lg += cause.to_detail.strip.gsub(/\n/, "\n\t")
+      if depth < 4
+        if cause.respond_to?(:to_detail)
+          lg += "\n\tCAUSE: "
+          lg += cause.to_detail(options, depth: depth + 1).strip.gsub(/\n/, "\n\t")
+        else
+          lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
+          lg += "\n\tBACKTRACE:\n\t\t#{cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first].join("\n\t\t")}"
+        end
       else
-        lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
-      end
-      if cause_cleaner && cause.backtrace
-        lg += cause_cleaner.clean(cause.backtrace).join("\n\t\t")
+        lg += "\n\tand more causes..."
       end
     end
     lg << "\n"
@@ -255,11 +262,7 @@ class StandardError
     logger = options[:logger] || Coaster.logger
     return unless logger
 
-    msg = to_detail
-    if (bt = cleaned_backtrace(options))
-      msg += "\tBACKTRACE:\n\t"
-      msg += bt.join("\n\t")
-    end
+    msg = to_detail(options)
 
     if level && logger.respond_to?(level)
       logger.send(level, msg)

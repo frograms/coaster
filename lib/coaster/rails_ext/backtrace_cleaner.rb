@@ -11,6 +11,8 @@ class ActiveSupport::BacktraceCleaner
     alias_method :original_silence, :silence
     def silence(backtrace)
       m_bt = backtrace.shift(minimum_first)
-      m_bt + ['BacktraceCleaner.minimum_first ... and next silenced backtraces'] + original_silence(backtrace)
+      remain_bt = original_silence(backtrace)
+      m_bt += ['BacktraceCleaner.minimum_first ... and next silenced backtraces'] + remain_bt if remain_bt.present?
+      m_bt
     end
 end
