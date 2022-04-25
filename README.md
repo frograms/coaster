@@ -106,7 +106,7 @@ cleaner(`AcitveSupport::BacktraceCleaner`)는 `StandardError.cleaner=`, `Standar
    ```
    require 'coaster/core_ext/standard_error/sentry'
    ```
-   ([raven.rb](coaster/core_ext/standard_error/raven.rb)는 legacy, 옛날 sentry gem 이름)
+   ([raven.rb](lib/coaster/core_ext/standard_error/raven.rb)는 legacy, 옛날 sentry gem 이름)
 
 ## StandardError#to_detail
 `logging` 메서드에서 출력한 메시지를 만든다.
