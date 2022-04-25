@@ -91,27 +91,33 @@ cleaner(`AcitveSupport::BacktraceCleaner`)는 `StandardError.cleaner=`, `Standar
 기본값은 없으며 cleaner가 없을 경우 backtrace를 출력하지 않는다.
 
 1. options
-  1. `:logger` => 기본 logger를 대체할 logger
-  1. `:cleaner` => 해당 에러를 로깅할때 사용할 cleaner
+   1. `:logger` => 기본 logger를 대체할 logger
+   1. `:cleaner` => 해당 에러를 로깅할때 사용할 cleaner
 1. before_logging_blocks, after_loggin_blocks
-  1. `logging` 전후 처리를 추가할 수 있으며 추가된 block은 error instance 내에서 실행된다.
-  1. ```
-     StandardError.before_logging(:cloudwatch) do
-       ReportCloudWatch.send(self) # self가 에러 자신
-     end
-     ```
+   1. `logging` 전후 처리를 추가할 수 있으며 추가된 block은 error instance 내에서 실행된다.
+   1. ```
+      StandardError.before_logging(:cloudwatch) do
+        ReportCloudWatch.send(self) # self가 에러 자신
+      end
+      ```
 1. log 내용은 `StandardError#to_detail`을 사용
+1. Sentry
+   아래와 같이 require를 하면 logging 하기 전 sentry에 보낸다.
+   ```
+   require 'coaster/core_ext/standard_error/sentry'
+   ```
+   (raven은 legacy, 옛날 sentry gem 이름)
 
 ## StandardError#to_detail
 `logging` 메서드에서 출력한 메시지를 만든다.
 
-  1. error class, status, message, instance_variables(, backtrace) 순서대로 출력하며   
-     cause가 존재할 경우 CAUSE이후 tab indent를 하여 출력한다. cause는 최대 3 depth까지 출력한다.
-  1. instance_variable
-    1. `StandardError.detail_vars` Array에서 있는 값의 출력은 `StandardError.detail_value_proc`으로 출력한다.
-      1. `detail_vars` 기본값은 `%i[@attributes @tkey @fingerprint @tags @level]`
-      1. `detail_value_proc` 기본값은 `Proc.new{|val| val.inspect}`
-    1. 나머지는 `StandardError.detail_value_simpe`로 처리하며 class name만 사용한다.
+1. error class, status, message, instance_variables(, backtrace) 순서대로 출력하며   
+   cause가 존재할 경우 CAUSE이후 tab indent를 하여 출력한다. cause는 최대 3 depth까지 출력한다.
+1. instance_variable
+   1. `StandardError.detail_vars` Array에서 있는 값의 출력은 `StandardError.detail_value_proc`으로 출력한다.
+   1. `detail_vars` 기본값은 `%i[@attributes @tkey @fingerprint @tags @level]`
+   1. `detail_value_proc` 기본값은 `Proc.new{|val| val.inspect}`
+   1. 나머지는 `StandardError.detail_value_simpe`로 처리하며 class name만 사용한다.
 
 ## coaster/rails_ext/backtrace_cleaner
 
