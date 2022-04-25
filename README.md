@@ -79,7 +79,7 @@ Hash로 전달되는 특수한 attribute가 있다.
 
 
 그 외에 error instance variable로 등록되는 attribute가 있다.
-1. tags: [ActiveSupport::TaggedLogging|http://api.rubyonrails.org/classes/ActiveSupport/TaggedLogging.html]에 사용된다.
+1. tags: [ActiveSupport::TaggedLogging](http://api.rubyonrails.org/classes/ActiveSupport/TaggedLogging.html)에 사용된다.
 1. level: debug, info 등등의 로깅 레벨
 1. tkey: Object Translation 에서 사용된다. 기본값은 '.self'와 동일하다.
 
