@@ -5,11 +5,11 @@ require 'pp'
 class StandardError
   cattr_accessor :cleaner, :cause_cleaner
 
-  DEFAULT_DETAIL_VARS = %i[@attributes @tkey @fingerprint @tags @level]
-  DEFAULT_DETAIL_VALUE_PROC = Proc.new{|val| val.inspect}
+  DEFAULT_INSPECTION_VARS = %i[@attributes @tkey @fingerprint @tags @level]
+  DEFAULT_INSPECTION_VALUE_PROC = Proc.new{|val| val.inspect}
 
   class << self
-    attr_accessor :detail_value_proc
+    attr_writer :inspection_value_proc
 
     def status; 999999 end # Unknown
     alias_method :code, :status
@@ -17,12 +17,12 @@ class StandardError
     def report?;      true end
     def intentional?; false end
     def title; _translate('.title') end
-    def detail_vars; @detail_vars ||= DEFAULT_DETAIL_VARS.dup end
-    def detail_value_proc; @detail_value_proc ||= superclass.respond_to?(:detail_value_proc) ? superclass.detail_value_proc : DEFAULT_DETAIL_VALUE_PROC end
-    def detail_value_simple(val)
+    def inspection_vars; @inspection_vars ||= DEFAULT_INSPECTION_VARS.dup end
+    def inspection_value_proc; @inspection_value_proc ||= superclass.respond_to?(:inspection_value_proc) ? superclass.inspection_value_proc : DEFAULT_INSPECTION_VALUE_PROC end
+    def inspection_value_simple(val)
       case val
-      when Array then val.map{|v| detail_value_simple(v)}
-      when Hash then Hash[val.map{|k,v| [k, detail_value_simple(v)]}]
+      when Array then val.map{|v| inspection_value_simple(v)}
+      when Hash then Hash[val.map{|k,v| [k, inspection_value_simple(v)]}]
       when String, Numeric, TrueClass, FalseClass then val
       else val.class.name
       end
@@ -122,6 +122,7 @@ class StandardError
   def code;         attributes[:code] || status end
   def code=(value); attributes[:code] = value end
   def title;        attributes[:title] || self.class.title end
+  def detail;       attributes[:detail] end
   def it_might_happen?;      attributes[:it] == :might_happen      end
   def it_should_not_happen?; attributes[:it] == :should_not_happen end
   def report?
@@ -185,30 +186,30 @@ class StandardError
     Oj.dump(to_hash.with_indifferent_access, mode: :compat)
   end
 
-  def detail_vars
-    (self.class.detail_vars + (attributes[:detail_vars] || [])).map(&:to_sym).compact.uniq
+  def inspection_vars
+    (self.class.inspection_vars + (attributes[:inspection_vars] || [])).map(&:to_sym).compact.uniq
   end
 
-  def detail_value_proc
-    attributes[:detail_value_proc] || self.class.detail_value_proc
+  def inspection_value_proc
+    attributes[:inspection_value_proc] || self.class.inspection_value_proc
   end
 
-  def to_detail_hash(options: {}.with_indifferent_access, _h: {}.with_indifferent_access, _depth: 0)
+  def to_inspection_hash(options: {}, _h: {}.with_indifferent_access, _depth: 0)
     _h.merge!(
       type: self.class.name, status: status,
       http_status: http_status, message: message,
       instance_variables: {}.with_indifferent_access
     )
     instance_variables.sort.each do |var|
-      if detail_vars.include?(var)
+      if inspection_vars.include?(var)
         val = instance_variable_get(var)
-        val = detail_value_proc.call(val) rescue val.to_s
+        val = inspection_value_proc.call(val) rescue val.to_s
         _h[:instance_variables][var] = val
       elsif var.to_s.start_with?('@__')
         next
       else
         val = instance_variable_get(var)
-        _h[:instance_variables][var] = self.class.detail_value_simple(val)
+        _h[:instance_variables][var] = self.class.inspection_value_simple(val)
       end
     end
     if backtrace.present?
@@ -224,8 +225,8 @@ class StandardError
     end
     if cause
       if _depth < 4
-        if cause.respond_to?(:to_detail_hash)
-          _h[:cause] = cause.to_detail_hash(options: options, _depth: _depth + 1)
+        if cause.respond_to?(:to_inspection_hash)
+          _h[:cause] = cause.to_inspection_hash(options: options, _depth: _depth + 1)
         else
           cause_h = {
             type: self.class.name, status: status,
@@ -241,8 +242,8 @@ class StandardError
     _h
   end
 
-  def to_detail(options = {})
-    dh = options[:_dh] || to_detail_hash(options: options)
+  def to_inspection_s(options: {}, _dh: nil)
+    dh = _dh || to_inspection_hash(options: options, _h: {}.with_indifferent_access, _depth: 0)
     lg = "[#{dh[:type]}] status:#{dh[:status]}"
     lg += "\n  MESSAGE: #{dh[:message]&.gsub(/\n/, "\n    ")}"
     dh[:instance_variables].each do |var, val|
@@ -254,7 +255,7 @@ class StandardError
     end
     if dh[:cause].is_a?(Hash)
       lg += "\n  CAUSE: "
-      lg += to_detail(_dh: dh[:cause]).strip.gsub(/\n/, "\n  ")
+      lg += to_inspection_s(options: options, _dh: dh[:cause]).strip.gsub(/\n/, "\n  ")
     elsif dh[:cause].is_a?(String)
       lg += dh[:cause]
     end
@@ -283,7 +284,7 @@ class StandardError
   end
 
   def logging(options = {})
-    before_logging_blocks.values.each { |blk| instance_exec &blk }
+    before_logging_blocks.values.each { |blk| instance_exec(&blk) }
 
     if !report? || intentional?
       if defined?(Rails)
@@ -296,7 +297,7 @@ class StandardError
     logger = options[:logger] || Coaster.logger
     return unless logger
 
-    msg = to_detail(options)
+    msg = to_inspection_s(options: options)
 
     if level && logger.respond_to?(level)
       logger.send(level, msg)
@@ -305,6 +306,6 @@ class StandardError
     end
     msg
   ensure
-    after_logging_blocks.values.each { |blk| instance_exec &blk }
+    after_logging_blocks.values.each { |blk| instance_exec(&blk) }
   end
 end

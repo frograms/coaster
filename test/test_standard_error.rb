@@ -2,7 +2,7 @@ require 'test_helper'
 require 'minitest/autorun'
 require 'coaster/core_ext/standard_error/raven'
 
-StandardError.detail_value_proc = Proc.new do |val|
+StandardError.inspection_value_proc = Proc.new do |val|
   PP.pp(val, ''.dup, 79)[0...-1]
 end
 
@@ -193,7 +193,7 @@ module Coaster
         raise err
       end
     rescue => e
-      detail = e.to_detail
+      detail = e.to_inspection_s
       detail_front = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
   MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
@@ -252,7 +252,7 @@ LOG
         raise SampleError
       end
     rescue => e
-      detail = e.to_detail
+      detail = e.to_inspection_s
       assert detail =~ /and more causes/
     end
 
@@ -311,7 +311,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_match /undefined local variable or method `aa'/, e.to_hash['message']
+      assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
     def test_descriptions

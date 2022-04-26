@@ -1,7 +1,7 @@
 require 'attr_extras'  # gem
 
 class Month
-  vattr_initialize :year, :month
+  vattr_initialize :_year, :_month
 
   class << self
     def from(object)
@@ -19,7 +19,7 @@ class Month
       date = Date.parse(str)
       from(date)
     rescue ArgumentError => e
-      if str.instance_variable_get(:@_gsub_)
+      if str.instance_variable_defined?(:@_gsub_) && str.instance_variable_get(:@_gsub_)
         raise e, str: str.instance_variable_get(:@_gsub_)
       elsif e.message != 'invalid date'
         raise e, str: str
@@ -41,11 +41,11 @@ class Month
   end
 
   def year
-    Integer(@year)
+    Integer(@_year)
   end
 
   def month
-    Integer(@month)
+    Integer(@_month)
   end
 
   def first_date

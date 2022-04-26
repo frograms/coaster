@@ -14,14 +14,14 @@ class Object
         if key.start_with?('.')
           subkey = key
         else
-          return I18n.t(key, *args, options)
+          return I18n.t(key, *args, **options)
         end
       elsif key.is_a?(Symbol)
         subkey = ".#{key.to_s}"
       elsif key.nil?
         # do nothing
       else
-        return I18n.t(key, *args, options)
+        return I18n.t(key, *args, **options)
       end
 
       key_class = options.delete(:class) || self
@@ -35,7 +35,7 @@ class Object
       options[:tkey] ||= key
       options.merge!(throw: true)
       result = catch(:exception) do
-        I18n.t(key, *args, options)
+        I18n.t(key, *args, **options)
       end
 
       if result.is_a?(I18n::MissingTranslation)
