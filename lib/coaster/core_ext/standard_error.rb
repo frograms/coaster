@@ -23,7 +23,7 @@ class StandardError
       case val
       when Array then val.map{|v| detail_value_simple(v)}
       when Hash then Hash[val.map{|k,v| [k, detail_value_simple(v)]}]
-      when String, Numeric, TrueClass, FalseClass then val.to_s
+      when String, Numeric, TrueClass, FalseClass then val
       else val.class.name
       end
     end
@@ -165,19 +165,20 @@ class StandardError
     attributes[:descriptions]
   end
 
-  def to_hash
-    hash = attributes.merge(
+  def to_hash(_h: {}.with_indifferent_access, _depth: 0)
+    _h.merge!(attributes)
+    _h.merge!(
       type: self.class.name, status: status,
       http_status: http_status, message: message
     )
-    if cause
+    if _depth < 4 && cause
       if cause.respond_to?(:to_hash)
-        hash[:cause] = cause.to_hash
+        _h[:cause] = cause.to_hash(_depth: _depth + 1)
       else
-        hash[:cause] = cause
+        _h[:cause_object] = cause
       end
     end
-    hash
+    _h
   end
 
   def to_json
@@ -192,38 +193,70 @@ class StandardError
     attributes[:detail_value_proc] || self.class.detail_value_proc
   end
 
-  def to_detail(options = {})
-    lg = "[#{self.class.name}] status:#{status}"
-    lg += "\n\tMESSAGE: #{safe_message.gsub(/\n/, "\n\t\t")}"
+  def to_detail_hash(options: {}.with_indifferent_access, _h: {}.with_indifferent_access, _depth: 0)
+    _h.merge!(
+      type: self.class.name, status: status,
+      http_status: http_status, message: message,
+      instance_variables: {}.with_indifferent_access
+    )
     instance_variables.sort.each do |var|
       if detail_vars.include?(var)
         val = instance_variable_get(var)
         val = detail_value_proc.call(val) rescue val.to_s
-        lg += "\n\t#{var}: #{val}"
+        _h[:instance_variables][var] = val
       elsif var.to_s.start_with?('@__')
         next
       else
         val = instance_variable_get(var)
-        lg += "\n\t#{var}: #{self.class.detail_value_simple(val)}"
+        _h[:instance_variables][var] = self.class.detail_value_simple(val)
       end
     end
-    if (bt = cleaned_backtrace(options))
-      lg += "\n\tBACKTRACE:\n\t\t"
-      lg += bt.join("\n\t\t")
-    end
-    if cause
-      _depth = options[:_depth] || 0
-      if _depth < 4
-        if cause.respond_to?(:to_detail)
-          lg += "\n\tCAUSE: "
-          lg += cause.to_detail(options.merge(_depth: _depth + 1)).strip.gsub(/\n/, "\n\t")
+    if backtrace.present?
+      if respond_to?(:cleaned_backtrace)
+        if (bt = cleaned_backtrace(options))
+          _h[:backtrace] = bt
         else
-          lg += "\n\tCAUSE: #{cause.class.name}: #{cause.message.gsub(/\n/, "\n\t\t")}"
-          lg += "\n\tBACKTRACE:\n\t\t#{cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first].join("\n\t\t")}"
+          _h[:backtrace] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
         end
       else
-        lg += "\n\tand more causes..."
+        _h[:backtrace] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
       end
+    end
+    if cause
+      if _depth < 4
+        if cause.respond_to?(:to_detail_hash)
+          _h[:cause] = cause.to_detail_hash(options: options, _depth: _depth + 1)
+        else
+          cause_h = {
+            type: self.class.name, status: status,
+            http_status: http_status, message: message,
+          }
+          cause_h.merge!(backtrace: cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first])
+          _h[:cause] = cause_h
+        end
+      else
+        _h[:cause] = 'and more causes...'
+      end
+    end
+    _h
+  end
+
+  def to_detail(options = {})
+    dh = options[:_dh] || to_detail_hash(options: options)
+    lg = "[#{dh[:type]}] status:#{dh[:status]}"
+    lg += "\n  MESSAGE: #{dh[:message]&.gsub(/\n/, "\n    ")}"
+    dh[:instance_variables].each do |var, val|
+      lg += "\n  #{var}: #{val}"
+    end
+    if (bt = dh[:backtrace] || [])
+      lg += "\n  BACKTRACE:\n    "
+      lg += bt.join("\n    ")
+    end
+    if dh[:cause].is_a?(Hash)
+      lg += "\n  CAUSE: "
+      lg += to_detail(_dh: dh[:cause]).strip.gsub(/\n/, "\n  ")
+    elsif dh[:cause].is_a?(String)
+      lg += dh[:cause]
     end
     lg << "\n"
   end

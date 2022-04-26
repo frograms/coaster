@@ -189,39 +189,39 @@ module Coaster
       rescue => e
         err = ExampleError.new(wat: 'cha')
         err.instance_variable_set(:@ins_var, [SampleError.new, {h: 1}])
-        err.instance_variable_set(:@ins_varr, {dd: 2})
+        err.instance_variable_set(:@ins_varr, {dd: true})
         raise err
       end
     rescue => e
       detail = e.to_detail
       detail_front = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
-	MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
-	@attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
-	@coaster: true
-	@fingerprint: []
-	@ins_var: [\"Coaster::TestStandardError::SampleError\", {:h=>\"1\"}]
-	@ins_varr: {:dd=>\"2\"}
-	@level: \"error\"
-	@raven: {}
-	@tags: {}
-	@tkey: nil
-	BACKTRACE:
-		/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:193:in `rescue in test_to_detail'
-		/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:187:in `test_to_detail'
+  MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
+  @attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
+  @coaster: true
+  @fingerprint: []
+  @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\"=>1}]
+  @ins_varr: {\"dd\"=>true}
+  @level: \"error\"
+  @raven: {}
+  @tags: {}
+  @tkey: nil
+  BACKTRACE:
+    #{__FILE__}:193:in `rescue in test_to_detail'
+    #{__FILE__}:187:in `test_to_detail'
 LOG
       detail_cause_front = <<-LOG
 CAUSE: [Coaster::TestStandardError::SampleError] status:10
-		MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
-		@attributes: {"frog"=>"rams"}
-		@coaster: true
-		@fingerprint: []
-		@level: "error"
-		@raven: {}
-		@tags: {}
-		@tkey: nil
-		BACKTRACE:
-			/Users/insoul/space/frograms/coaster/test/test_standard_error.rb:188:in `test_to_detail'
+    MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
+    @attributes: {"frog"=>"rams"}
+    @coaster: true
+    @fingerprint: []
+    @level: "error"
+    @raven: {}
+    @tags: {}
+    @tkey: nil
+    BACKTRACE:
+      #{__FILE__}:188:in `test_to_detail'
 LOG
       assert detail.start_with?(detail_front)
       cause_ix = (detail =~ /CAUSE/)
