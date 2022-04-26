@@ -261,6 +261,7 @@ class StandardError
     end
     lg << "\n"
   end
+  alias_method :to_detail, :to_inspection_s
 
   def rails_tag
     (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
