@@ -122,10 +122,8 @@ module Coaster
         /home/circleci/.rubygems/bin/bundle:25:in `load'
         /home/circleci/.rubygems/bin/bundle:25:in `<main>'
       EOS
-    end
 
-    def test_backtrace
-      expected_bt = <<~EOS.chomp.split("\n")
+      @expected_bt = <<~EOS.chomp.split("\n")
         /home/circleci/project/app/controllers/application_controller.rb:174:in `block (2 levels) in block_fun'
         actionpack (6.1.4.4) lib/action_controller/metal/mime_responds.rb:214:in `respond_to'
         /home/circleci/project/app/controllers/application_controller.rb:170:in `block_fun'
@@ -159,14 +157,24 @@ module Coaster
         /home/circleci/.rubygems/bin/bundle:25:in `load'
         /home/circleci/.rubygems/bin/bundle:25:in `<main>'
       EOS
-      mock = Minitest::Mock.new
-      def mock.path;  end
-      def mock.default_path; [] end
+    end
+
+    def test_backtrace
       Gem.stub :path, ['/home/circleci/project/vendor/bundle/ruby/2.7.0'] do
         Gem.stub :default_path, [] do
           cleaner = ActiveSupport::BacktraceCleaner.new
           bt = cleaner.clean(@backtrace)
-          assert_equal bt, expected_bt
+          assert_equal bt, @expected_bt
+        end
+      end
+    end
+
+    def test_backtrace_with_enumerator
+      Gem.stub :path, ['/home/circleci/project/vendor/bundle/ruby/2.7.0'] do
+        Gem.stub :default_path, [] do
+          cleaner = ActiveSupport::BacktraceCleaner.new
+          bt = cleaner.clean(@backtrace.lazy)
+          assert_equal bt, @expected_bt
         end
       end
     end

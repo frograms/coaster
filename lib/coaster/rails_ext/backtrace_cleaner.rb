@@ -10,9 +10,17 @@ class ActiveSupport::BacktraceCleaner
   private
     alias_method :original_silence, :silence
     def silence(backtrace)
-      m_bt = backtrace.shift(minimum_first)
-      remain_bt = original_silence(backtrace)
-      m_bt += ['BacktraceCleaner.minimum_first ... and next silenced backtraces'] + remain_bt if remain_bt.present?
-      m_bt
+      @silencers.each do |s|
+        ix = 0
+        backtrace = backtrace.reject do |line|
+          ix += 1
+          next if ix <= minimum_first
+          s.call(line)
+        end
+      end
+
+      backtrace = backtrace.to_a
+      backtrace.insert(minimum_first, 'BacktraceCleaner.minimum_first ... and next silenced backtraces')
+      backtrace
     end
 end
