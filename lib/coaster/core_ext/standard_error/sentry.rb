@@ -31,6 +31,8 @@ class StandardError
 
     nt[:tags] ||= (tags && tags.merge(nt[:tags] || {})) || {}
     nt[:tags] = nt[:tags].merge(environment: Rails.env) if defined?(Rails)
+    nt[:tags][:digest_message] = digest_message if digest_message.present?
+    nt[:tags][:digest_backtrace] = digest_backtrace if digest_backtrace.present?
     nt[:level] ||= self.level
     nt[:extra] = attributes.merge(nt[:extra])
     nt

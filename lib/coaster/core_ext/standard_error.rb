@@ -1,3 +1,4 @@
+require 'digest'
 require 'coaster/core_ext/object_translation'
 require 'coaster/rails_ext/backtrace_cleaner'
 require 'pp'
@@ -102,6 +103,15 @@ class StandardError
   end
 
   def safe_message; message || '' end
+  def digest_message
+    m = message.to_s.dup
+    mat = m.match(/#<.*0x(?<object_id>\S+)>/)
+    m = message.gsub(/#{mat[:object_id]}/, 'XXXXXXX') if mat
+    m = "#{self.class.name} #{m}"
+    @digest_message ||= Digest::MD5.hexdigest(m)[0...6]
+  end
+  def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
+  def user_digests; @user_digests ||= "#{[digest_message, digest_backtrace].compact.join(' ')}" end
   def status;       self.class.status end
   def before_logging_blocks; self.class.before_logging_blocks end
   def after_logging_blocks; self.class.after_logging_blocks end
@@ -155,8 +165,9 @@ class StandardError
   # user friendly message, for overid
   def user_message
     return _translate if description.present? || tkey.present?
-    return "#{_translate} (#{message})" unless defined?(@coaster)
-    message
+    "#{_translate} (#{user_digests})"
+  rescue => e
+    "#{message} (user_message_error - #{e.class.name} #{e.message})"
   end
 
   # another user friendly messages

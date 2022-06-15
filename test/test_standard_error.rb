@@ -34,7 +34,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
-      assert_equal 'standard error translation (developer message)', e.user_message
+      assert_equal 'standard error translation (363fdc)', e.user_message
       assert_equal 'standard error title', e.title
       e = StandardError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s
@@ -53,7 +53,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'standard error translation', e._translate
-      assert_equal 'standard error translation (developer message)', e.user_message
+      assert_equal 'standard error translation (e39e84)', e.user_message
       assert_equal 'standard error title', e.title
       e = UntitledError.new(m: 'developer message', desc: 'user message')
       assert_equal "user message (developer message)", e.to_s
@@ -80,7 +80,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
+      assert_equal 'Test sample error (e28ede)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new(beet: 'apple')
       assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
@@ -88,7 +88,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
+      assert_equal 'Test sample error (cbe233)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new('developer message')
       assert_equal "developer message", e.to_s
@@ -96,7 +96,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (developer message)', e.user_message
+      assert_equal 'Test sample error (43161e)', e.user_message
       assert_equal 'Test this title', e.title
       e = SampleError.new(desc: 'user message')
       assert_equal "user message (Coaster::TestStandardError::SampleError)", e.to_s
@@ -311,6 +311,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
+      assert_equal 'standard error translation (a962bd 80dfafa3)', e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
