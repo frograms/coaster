@@ -178,5 +178,34 @@ module Coaster
         end
       end
     end
+
+    def test_backtrace_to_keep
+      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer')
+      new_e = StandardError.new(e)
+      assert_equal new_e.message, e.message
+      assert_equal new_e.description, e.description
+      assert_nil new_e.backtrace
+      assert_nil e.backtrace
+    end
+
+    def test_backtrace_to_keep_as_cause
+      raise ArgumentError, m: 'blahasdf', desc: 'qwer'
+    rescue => e
+      new_e = StandardError.new(e)
+      assert_equal new_e.message, e.message
+      assert_equal new_e.description, e.description
+      assert_equal new_e.backtrace, e.backtrace
+    end
+
+    def sample_method_for_sse
+      sample_method_for_sse
+    end
+
+    def test_system_stack_error
+      sample_method_for_sse
+    rescue SystemStackError => e
+      new_e = StandardError.new(e)
+      assert_equal new_e.backtrace, e.backtrace
+    end
   end
 end

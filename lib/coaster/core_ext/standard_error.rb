@@ -55,21 +55,25 @@ class StandardError
     @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
-    @attributes.merge!(cause.attributes || {}) if cause && cause.respond_to?(:attributes)
     @tkey = nil
+    if cause && cause.is_a?(StandardError)
+      @fingerprint = cause.fingerprint.dup
+      @tags = cause.tags.dup
+      @level = cause.level
+      @tkey = cause.tkey
+      @attributes = cause.attributes.dup
+    end
 
     case message
-    when Exception
-      msg = message
-      set_backtrace(message.backtrace)
     when StandardError
-      @fingerprint = message.fingerprint
-      @tags = message.tags
+      @fingerprint = [message.fingerprint, @fingerprint].flatten.compact.uniq
+      @tags = @tags.merge(message.tags || {})
       @level = message.level
       @tkey = message.tkey
-      @attributes = message.attributes
+      @attributes = @attributes.merge(message.attributes || {})
       msg = message
-      set_backtrace(message.backtrace)
+    when Exception
+      msg = message
     when Hash then
       @coaster = true # coaster 확장을 사용한 에러임을 확인할 수 있음.
       hash = message.with_indifferent_access rescue message
@@ -100,6 +104,8 @@ class StandardError
     @tags = {} unless @tags.is_a?(Hash)
     msg = "{#{cause.message}}" if msg.blank? && cause
     super(msg)
+    set_backtrace(msg.backtrace) if msg.is_a?(Exception)
+    self
   end
 
   def safe_message; message || '' end
