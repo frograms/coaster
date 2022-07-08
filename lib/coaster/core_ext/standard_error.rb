@@ -29,6 +29,14 @@ class StandardError
       end
     end
 
+    def user_digests_with!(&block)
+      define_method(:user_digests, &block)
+    end
+
+    def user_digests_with_default!
+      define_method(:user_digests) { _user_digests }
+    end
+
     def before_logging(name, &block)
       @before_logging_blocks ||= {}
       @before_logging_blocks[name] = block
@@ -105,6 +113,9 @@ class StandardError
     msg = "{#{cause.message}}" if msg.blank? && cause
     super(msg)
     set_backtrace(msg.backtrace) if msg.is_a?(Exception)
+    @fingerprint << digest_message
+    @fingerprint << digest_backtrace
+    @fingerprint.compact!
     self
   end
 
@@ -117,7 +128,8 @@ class StandardError
     @digest_message ||= Digest::MD5.hexdigest(m)[0...6]
   end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
-  def user_digests; @user_digests ||= "#{[digest_message, digest_backtrace].compact.join(' ')}" end
+  def _user_digests; "#{[digest_message, digest_backtrace].compact.join(' ')}" end
+  alias_method :user_digests, :_user_digests
   def status;       self.class.status end
   def before_logging_blocks; self.class.before_logging_blocks end
   def after_logging_blocks; self.class.after_logging_blocks end

@@ -199,7 +199,9 @@ module Coaster
   MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
   @attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
   @coaster: true
-  @fingerprint: []
+  @digest_backtrace: NilClass
+  @digest_message: a8c7c1
+  @fingerprint: ["a8c7c1"]
   @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\"=>1}]
   @ins_varr: {\"dd\"=>true}
   @level: \"error\"
@@ -215,7 +217,9 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
     @attributes: {"frog"=>"rams"}
     @coaster: true
-    @fingerprint: []
+    @digest_backtrace: NilClass
+    @digest_message: cbe233
+    @fingerprint: ["cbe233"]
     @level: "error"
     @raven: {}
     @tags: {}
@@ -311,7 +315,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal 'standard error translation (a962bd 80dfafa3)', e.user_message
+      assert_equal 'standard error translation (a962bd 3a7cb999)', e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
@@ -343,6 +347,35 @@ LOG
     def test_might_happen
       e = SampleErrorMightHappen.new('fbar')
       assert !e.report?
+    end
+
+    def test_user_message_change
+      SampleErrorSub.user_digests_with! do
+        message
+      end
+
+      begin
+        raise SampleError, 'asdff'
+      rescue => e
+        assert_equal e.user_message, 'Test sample error (0dba9e f0fa4c35)'
+      end
+      begin
+        raise SampleErrorSub, 'asdff'
+      rescue => e
+        assert_equal e.user_message, 'Test sample error (asdff)'
+      end
+      begin
+        raise SampleErrorSubSub, 'asdff'
+      rescue => e
+        assert_equal e.user_message, 'Test sample error (asdff)'
+      end
+
+      SampleErrorSubSub.user_digests_with_default!
+      begin
+        raise SampleErrorSubSub, 'asdff'
+      rescue => e
+        assert_equal e.user_message, 'Test sample error (58ee3f 3d0f84b9)'
+      end
     end
   end
 end
