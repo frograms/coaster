@@ -183,7 +183,8 @@ class StandardError
   # user friendly message, for overid
   def user_message
     return _translate if description.present? || tkey.present?
-    "#{_translate} (#{user_digests})"
+    return "#{_translate} (#{user_digests})" unless defined?(@coaster)
+    message
   rescue => e
     "#{message} (user_message_error - #{e.class.name} #{e.message})"
   end

@@ -88,7 +88,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (cbe233)', e.user_message
+      assert_equal 'Test sample error (Coaster::TestStandardError::SampleError)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new('developer message')
       assert_equal "developer message", e.to_s
@@ -312,10 +312,11 @@ LOG
     def test_to_hash
       aa # raise NameError
     rescue => e
+      bt = e.digest_backtrace
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal 'standard error translation (a962bd 3a7cb999)', e.user_message
+      assert_equal "standard error translation (a962bd #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
@@ -357,24 +358,26 @@ LOG
       begin
         raise SampleError, 'asdff'
       rescue => e
-        assert_equal e.user_message, 'Test sample error (0dba9e f0fa4c35)'
+        bt = e.digest_backtrace
+        assert_equal "Test sample error (0dba9e #{bt})", e.user_message
       end
       begin
         raise SampleErrorSub, 'asdff'
       rescue => e
-        assert_equal e.user_message, 'Test sample error (asdff)'
+        assert_equal 'Test sample error (asdff)', e.user_message
       end
       begin
         raise SampleErrorSubSub, 'asdff'
       rescue => e
-        assert_equal e.user_message, 'Test sample error (asdff)'
+        assert_equal 'Test sample error (asdff)', e.user_message
       end
 
       SampleErrorSubSub.user_digests_with_default!
       begin
         raise SampleErrorSubSub, 'asdff'
       rescue => e
-        assert_equal e.user_message, 'Test sample error (58ee3f 3d0f84b9)'
+        bt = e.digest_backtrace
+        assert_equal "Test sample error (58ee3f #{bt})", e.user_message
       end
     end
   end
