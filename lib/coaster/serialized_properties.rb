@@ -40,7 +40,7 @@ module Coaster
           prop_hash = {type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default}.merge(key)
           prop_hash.delete(:key)
         end
-        serialized_property(serialize_column, key_name, prop_hash)
+        serialized_property(serialize_column, key_name, **prop_hash)
       end
     end
 
