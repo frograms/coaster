@@ -7,12 +7,12 @@ module Coaster
         case object
         when Hash
           object.each_with_object({}) do |(key, value), memo|
-            memo.merge!(flatten_hashify(value, breadcrumbs: breadcrumbs + [key], include_array: include_array))
+            memo.merge!(flatten_hashify(value, delimiter: delimiter, breadcrumbs: breadcrumbs + [key], include_array: include_array))
           end
         when Array
           if include_array
             object.each.with_index(1).with_object({}) do |(element, ix), memo|
-              memo.merge!(flatten_hashify(element, breadcrumbs: breadcrumbs + [ix], include_array: include_array))
+              memo.merge!(flatten_hashify(element, delimiter: delimiter, breadcrumbs: breadcrumbs + [ix], include_array: include_array))
             end
           else
             {breadcrumbs.join(delimiter) => object}
