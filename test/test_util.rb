@@ -24,6 +24,7 @@ module Coaster
       assert_equal({"a.0"=>1, "b.aa"=>1, "b.bb.0"=>2, "b.bb.1"=>1}, res)
       b = Util.roughen_hashify(res)
       assert_equal(a, b)
+
       res = Util.flatten_hashify([{a: 1}, 22, [33, 44], {b: {c: [33, {d: 4}]}}])
       assert_equal({""=>[{:a=>1}, 22, [33, 44], {:b=>{:c=>[33, {:d=>4}]}}]}, res) # no meaning result
       res = Util.flatten_hashify([{a: 1}, 22, [33, 44], {b: {c: [33, {d: 4}]}}], array_start: 1)
