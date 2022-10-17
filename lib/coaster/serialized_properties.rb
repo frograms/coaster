@@ -143,6 +143,7 @@ module Coaster
           define_method key.to_sym do
             hsh = send(serialize_column.to_sym)
             hsh[key.to_s] ||= default.dup
+            hsh[key.to_s]
           end
         end
       else
