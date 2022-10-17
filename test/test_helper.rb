@@ -8,6 +8,12 @@ require 'bundler/setup'
 require 'coaster'
 require 'logger'
 
+require 'active_record'
+ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ":memory:"
+load File.expand_path('../support/schema.rb', __FILE__)
+load File.expand_path('../support/models.rb', __FILE__)
+require 'rails'
+
 class Raven
   def self.capture_exception(*args)
   end
