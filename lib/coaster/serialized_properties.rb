@@ -78,7 +78,11 @@ module Coaster
           if type == Time
             _define_serialized_property serialize_column, key,
               getter: Proc.new { |val| val.nil? ? nil : Time.zone.parse(val) },
-              setter: Proc.new { |val| val.is_a?(Time) ? val.to_s(:default_tz) : nil}
+              setter: Proc.new { |val|
+                if val.is_a?(Time)
+                  val.respond_to?(:to_fs) ? val.to_fs(:default_tz) : val.to_s(:default_tz)
+                end
+              }
           elsif type == Integer
             _define_serialized_property serialize_column, key,
               setter: proc { |val|
