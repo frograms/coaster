@@ -80,7 +80,7 @@ module Coaster
       assert_nil e.description
       assert_nil e.desc
       assert_equal 'Test sample error', e._translate
-      assert_equal 'Test sample error (e28ede)', e.user_message
+      assert_equal 'Test sample error (6cef86)', e.user_message
       assert_equal 'Test this title',  e.title
       e = SampleError.new(beet: 'apple')
       assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", e.to_s
@@ -316,7 +316,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "standard error translation (a962bd #{bt})", e.user_message
+      assert_equal "standard error translation (37c30e #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 

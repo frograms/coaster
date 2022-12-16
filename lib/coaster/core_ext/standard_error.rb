@@ -28,6 +28,13 @@ class StandardError
       else val.class.name
       end
     end
+    def digest_message(message)
+      m = message.to_s.dup
+      mat = m.match(/#\<.*0x(?<object_id>\S+)[\s\>]/)
+      m = message.gsub(/#{mat[:object_id]}/, 'X'*mat[:object_id].size) if mat
+      m = "#{name} #{m}"
+      Digest::MD5.hexdigest(m)[0...6]
+    end
 
     def user_digests_with!(&block)
       define_method(:user_digests, &block)
@@ -112,21 +119,16 @@ class StandardError
     @tags = {} unless @tags.is_a?(Hash)
     msg = "{#{cause.message}}" if msg.blank? && cause
     super(msg)
+    @digest_message = self.class.digest_message(msg)
     set_backtrace(msg.backtrace) if msg.is_a?(Exception)
-    @fingerprint << digest_message
+    @fingerprint << @digest_message
     @fingerprint << digest_backtrace
     @fingerprint.compact!
     self
   end
 
   def safe_message; message || '' end
-  def digest_message
-    m = message.to_s.dup
-    mat = m.match(/#<.*0x(?<object_id>\S+)>/)
-    m = message.gsub(/#{mat[:object_id]}/, 'XXXXXXX') if mat
-    m = "#{self.class.name} #{m}"
-    @digest_message ||= Digest::MD5.hexdigest(m)[0...6]
-  end
+  def digest_message; @digest_message ||= self.class.digest_message(message) end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
   def _user_digests; "#{[digest_message, digest_backtrace].compact.join(' ')}" end
   alias_method :user_digests, :_user_digests
