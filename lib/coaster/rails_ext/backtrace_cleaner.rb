@@ -1,10 +1,12 @@
 require 'active_support/backtrace_cleaner'
 
 class ActiveSupport::BacktraceCleaner
+  cattr_accessor :minimum_first, default: 10
+
   attr_writer :minimum_first
 
   def minimum_first
-    @minimum_first ||= 10
+    @minimum_first ||= self.class.minimum_first
   end
 
   private
