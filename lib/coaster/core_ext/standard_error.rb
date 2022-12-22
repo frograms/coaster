@@ -278,7 +278,7 @@ class StandardError
     dh = _dh || to_inspection_hash(options: options, _h: {}.with_indifferent_access, _depth: 0)
     lg = "[#{dh[:type]}] status:#{dh[:status]}"
     lg += "\n  MESSAGE: #{dh[:message]&.gsub(/\n/, "\n    ")}"
-    dh[:instance_variables].each do |var, val|
+    dh[:instance_variables]&.each do |var, val|
       lg += "\n  #{var}: #{val}"
     end
     if (bt = dh[:backtrace] || [])
