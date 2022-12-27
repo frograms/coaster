@@ -73,7 +73,8 @@ module Coaster
             },
             getter: proc { |val|
               type.include?(val) ? val : nil
-            }
+            },
+            default: default
         else
           if type == Time
             _define_serialized_property serialize_column, key,
@@ -82,18 +83,20 @@ module Coaster
                 if val.is_a?(Time)
                   val.respond_to?(:to_fs) ? val.to_fs(:default_tz) : val.to_s(:default_tz)
                 end
-              }
+              },
+              default: default
           elsif type == Integer
             _define_serialized_property serialize_column, key,
               setter: proc { |val|
                 val = val.blank? ? nil : Integer(val)
                 val = setter.call(val) if setter
                 val
-              }
+              },
+              default: default
           elsif type == Array
-            _define_serialized_property(serialize_column, key, default: [])
+            _define_serialized_property(serialize_column, key, default: default || [])
           elsif type && type < ActiveRecord::Base
-            _define_serialized_property serialize_column, "#{key}_id"
+            _define_serialized_property serialize_column, "#{key}_id", default: default
 
             define_method key.to_sym do
               instance_val = instance_variable_get("@#{key}".to_sym)
