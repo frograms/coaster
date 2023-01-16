@@ -27,6 +27,12 @@ module Coaster
       assert_equal 'translation missing: en.class.Coaster.NotTranslated.self', NotTranslated._translate
     end
 
+    def test_fallback
+      assert_equal 'Coaster::NotTranslated', NotTranslated._translate(fallback: :name)
+      assert_equal 'aabbcc', NotTranslated._translate(fallback: 'aabbcc')
+      assert_equal 'Coaster::NotTranslated..aabb', NotTranslated._translate(fallback: proc{|klass| "#{klass.name}..aabb"})
+    end
+
     def test_raise_translation_missing
       exception = catch(:exception) do
         NotTranslated._translate(throw: true)

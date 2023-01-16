@@ -45,6 +45,11 @@ class Object
 
         if key_class.superclass == Object || key_class == Object
           return options[:description] if options[:description].present?
+          case options[:fallback]
+          when Proc then return options[:fallback].call(self)
+          when Symbol then return self.send(options[:fallback])
+          when String then return options[:fallback]
+          end
           if Coaster.logger 
             Coaster.logger.info(options[:original_missing])
             Coaster.logger.debug(caller.join("\n"))
