@@ -316,7 +316,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "standard error translation (37c30e #{bt})", e.user_message
+      assert_equal "standard error translation (bc1746 #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
@@ -325,6 +325,13 @@ LOG
     rescue => e
       e.descriptions.merge!(a: 1)
       assert_equal 1, e.descriptions['a']
+    end
+
+    def test_to_json
+      raise SampleError
+    rescue => e
+      json = ::JSON.dump({error: e})
+      assert_equal "{\"error\":{\"type\":\"Coaster::TestStandardError::SampleError\",\"status\":10,\"http_status\":500,\"message\":\"Coaster::TestStandardError::SampleError\"}}", json
     end
 
     class SampleErrorSub < SampleError; end
