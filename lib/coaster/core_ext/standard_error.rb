@@ -214,7 +214,7 @@ class StandardError
     _h
   end
 
-  def to_json
+  def to_json(options = {})
     Oj.dump(to_hash.with_indifferent_access, mode: :compat)
   end
 
