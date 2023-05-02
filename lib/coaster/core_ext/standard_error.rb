@@ -86,9 +86,9 @@ class StandardError
       @level = message.level
       @tkey = message.tkey
       @attributes = @attributes.merge(message.attributes || {})
-      msg = message
+      msg = message.message
     when Exception
-      msg = message
+      msg = message.message
     when Hash then
       @coaster = true # coaster 확장을 사용한 에러임을 확인할 수 있음.
       hash = message.with_indifferent_access rescue message
@@ -120,7 +120,7 @@ class StandardError
     msg = "{#{cause.message}}" if msg.blank? && cause
     super(msg)
     @digest_message = self.class.digest_message(msg)
-    set_backtrace(msg.backtrace) if msg.is_a?(Exception)
+    set_backtrace(message.backtrace) if message.is_a?(Exception)
     @fingerprint << @digest_message
     @fingerprint << digest_backtrace
     @fingerprint.compact!

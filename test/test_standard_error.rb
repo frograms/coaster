@@ -316,7 +316,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "standard error translation (bc1746 #{bt})", e.user_message
+      assert_equal "standard error translation (3dd84e #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
@@ -386,6 +386,12 @@ LOG
         bt = e.digest_backtrace
         assert_equal "Test sample error (58ee3f #{bt})", e.user_message
       end
+    end
+
+    def test_wrapping_digest
+      a = StandardError.new('#<Abc:0x111>')
+      b = StandardError.new(a)
+      assert_equal '#<Abc:0x111>', b.message
     end
   end
 end
