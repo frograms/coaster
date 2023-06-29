@@ -40,7 +40,7 @@ module Coaster
         end
 
         def run_cmd(path, command)
-          puts "Run command: #{command}"
+          puts "#{path}: #{command}"
           stdout, stderr, status = Open3.capture3(command, chdir: path)
           if status.success?
             puts "  ↳ success: #{stdout}"
@@ -119,8 +119,8 @@ module Coaster
 
       def merge(pointer)
         pointers = pointers(pointer).join(',')
-        puts "#{path} merged deploy, #{pointers}"
-        run_git_cmd("merge #{pointer} --commit -m \"merged deploy, #{pointers}\"")
+        puts "#{path} merged deploy: #{pointers}"
+        run_git_cmd("merge #{pointer} --commit -m \"merged deploy: #{pointers}\"")
       end
 
       def submodule_sha(path, pointer: nil)
