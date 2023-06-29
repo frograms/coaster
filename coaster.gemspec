@@ -13,9 +13,13 @@ Gem::Specification.new do |s|
   s.email = 'buzz@frograms.com'
   s.licenses = ['MIT']
 
-  s.files = Dir['{app,config,db,lib}/**/*'] + %w(LICENSE Rakefile README.md)
+  s.files = `git ls-files bin lib *.md LICENSE Rakefile`.split("\n")
+  s.bindir = 'bin'
+  s.executables << 'coaster'
   s.test_files = Dir['test/**/*']
   s.require_path = %w{lib}
+  s.metadata['source_code_uri'] = 'https://github.com/frograms/coaster'
+  s.metadata['bug_tracker_uri'] = 'https://github.com/frograms/coaster/issues'
 
   s.add_dependency 'oj'
   s.add_dependency 'i18n', '>= 1.0'

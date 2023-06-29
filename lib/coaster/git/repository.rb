@@ -3,6 +3,14 @@ module Coaster
     class Repository
       class << self
         def option_parser(options)
+          case options
+          when Hash then hash_option_parser(options)
+          when Array, Set then options.map{|o| option_parser(o)}.join(' ')
+          else options
+          end
+        end
+
+        def hash_option_parser(options)
           opts = []
 
           # multiple options can be passed by set
@@ -18,7 +26,7 @@ module Coaster
             v = case v
             when Hash then v.map{|vk,vv| "#{vk}=#{vv}"}.join(',')
             when Array then v.join(',')
-            else v
+            else v || ''
             end
             v = v.strip
             if k.start_with?('--')
@@ -60,7 +68,7 @@ module Coaster
         self.class.run_cmd(path, command)
       end
 
-      def run_git_cmd(command, **options)
+      def run_git_cmd(command, *options)
         cmd = "git #{self.class.option_parser(options)} #{command}"
         run_cmd(cmd)
       end
