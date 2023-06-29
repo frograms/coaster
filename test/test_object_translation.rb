@@ -24,7 +24,7 @@ module Coaster
     end
 
     def test_translation_missing
-      assert_equal 'translation missing: en.class.Coaster.NotTranslated.self', NotTranslated._translate
+      assert_equal 'Translation missing: en.class.Coaster.NotTranslated.self', NotTranslated._translate
     end
 
     def test_fallback

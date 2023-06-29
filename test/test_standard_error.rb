@@ -64,12 +64,12 @@ module Coaster
       assert_equal 'user message', e.user_message
       assert_equal 'standard error title', e.title
       e = UntitledError.new(tkey: 'no.translation')
-      assert_equal "translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.to_s
-      assert_equal "translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.message
+      assert_equal "Translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.to_s
+      assert_equal "Translation missing: en.no.translation (Coaster::TestStandardError::UntitledError)", e.message
       assert_nil e.description
       assert_nil e.desc
-      assert_equal 'translation missing: en.no.translation', e._translate
-      assert_equal "translation missing: en.no.translation", e.user_message
+      assert_equal 'Translation missing: en.no.translation', e._translate
+      assert_equal "Translation missing: en.no.translation", e.user_message
       assert_equal 'standard error title', e.title
     end
 
