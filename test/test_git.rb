@@ -11,12 +11,12 @@ module Coaster
       FileUtils.mkdir_p(@test_repo_root)
       @beta = Git::Repository.create(File.join(@test_repo_root, 'beta'))
       @beta.run_cmd('echo "hello beta" > README.md')
-      @beta.run_git_cmd('add .')
+      @beta.add('.')
       @beta.run_git_cmd('commit -m "hello"')
-      @beta.branch!('beta_feature')
-      @beta.checkout!('beta_feature')
+      @beta.branch('beta_feature')
+      @beta.checkout('beta_feature')
       @beta.run_cmd('echo "beta_feature" >> README.md')
-      @beta.run_git_cmd('add .')
+      @beta.add('.')
       @beta.run_git_cmd('commit -m "beta_feature"')
       @beta.run_git_cmd('checkout main')
 
@@ -24,7 +24,7 @@ module Coaster
       @alpha.submodule_add!('sb/beta', @beta.path, git_options: {'-c' => {'protocol.file.allow' => 'always'}})
       @alpha.submodule_update!('sb/beta')
       @alpha.run_cmd('echo "hello alpha" > README.md')
-      @alpha.run_git_cmd('add .')
+      @alpha.add('.')
       @alpha.run_git_cmd('commit -m "hello"')
     end
 
@@ -37,15 +37,15 @@ module Coaster
       assert_equal "hello alpha\n", @alpha.run_cmd('cat README.md')
       assert_equal "hello beta\n", @alpha.run_cmd('cat sb/beta/README.md')
 
-      @alpha.branch!('alpha_feature')
-      @alpha.checkout!('alpha_feature')
+      @alpha.branch('alpha_feature')
+      @alpha.checkout('alpha_feature')
       @alpha.run_cmd('echo "alpha_feature" >> README.md')
       @alpha.submodules['sb/beta'].run_git_cmd('checkout beta_feature')
-      @alpha.run_git_cmd('add .')
+      @alpha.add('.')
       @alpha.run_git_cmd('commit -m "alpha_feature"')
       assert_equal "README.md\nsb/beta\n", @alpha.run_git_cmd('diff --name-only HEAD~1 HEAD')
 
-      @alpha.checkout!('main')
+      @alpha.checkout('main')
       @alpha.submodule_update!
       assert_equal "hello beta\n", @alpha.run_cmd('cat sb/beta/README.md')
       @alpha.deep_merge('alpha_feature')

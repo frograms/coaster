@@ -73,19 +73,19 @@ module Coaster
         run_cmd(cmd)
       end
 
-      def add!
-        run_git_cmd('add .')
+      def add(*paths, **options)
+        run_git_cmd("add #{self.class.hash_option_parser(options)} #{paths.join(' ')}")
       end
 
-      def commit!(message)
+      def commit(message)
         run_git_cmd("commit -m \"#{message}\"")
       end
 
-      def branch!(name)
+      def branch(name)
         run_git_cmd("branch #{name}")
       end
 
-      def checkout!(name)
+      def checkout(name)
         run_git_cmd("checkout #{name}")
       end
 
