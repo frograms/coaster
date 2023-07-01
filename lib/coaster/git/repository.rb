@@ -1,61 +1,7 @@
 module Coaster
   module Git
     class Repository
-      class << self
-        def option_parser(options)
-          case options
-          when Hash then hash_option_parser(options)
-          when Array, Set then options.map{|o| option_parser(o)}.join(' ')
-          else options
-          end
-        end
-
-        def hash_option_parser(options)
-          opts = []
-
-          # multiple options can be passed by set
-          options.map do |k, v|
-            if v.is_a?(Set)
-              v.each {|set_v| opts << [k, set_v]}
-            else
-              opts << [k, v]
-            end
-          end
-
-          parsed = opts.map do |k, v|
-            v = case v
-            when Hash then v.map{|vk,vv| "#{vk}=#{vv}"}.join(',')
-            when Array then v.join(',')
-            else v || ''
-            end
-            v = v.strip
-            if k.start_with?('--')
-              "#{k}#{v.length > 0 ? "=#{v}" : ''}" # ex, --config-env=<name>=<envvar>
-            else
-              "#{k} #{v.length > 0 ? "#{v}" : ''}" # ex, -c <name>=<value>
-            end
-          end
-
-          parsed.join(' ')
-        end
-
-        def run_cmd(path, command)
-          puts "#{path}: #{command}"
-          stdout, stderr, status = Open3.capture3(command, chdir: path)
-          if status.success?
-            puts "  ↳ success: #{stdout}"
-            stdout
-          else
-            raise "Error executing command: #{command}\n  ↳ #{stderr}"
-          end
-        end
-
-        def create(path)
-          run_cmd(path.split('/')[0..-2].join('/'), "git init #{path}")
-          run_cmd(path, "git commit --allow-empty -m 'initial commit'")
-          new(path)
-        end
-      end
+      include Coaster::Git
 
       attr_reader :path
 
@@ -64,17 +10,17 @@ module Coaster
         @sha = current_sha
       end
 
-      def run_cmd(command)
-        self.class.run_cmd(path, command)
+      def run_cmd(command, path: nil)
+        super(path || @path, command)
       end
 
       def run_git_cmd(command, *options)
-        cmd = "git #{self.class.option_parser(options)} #{command}"
+        cmd = "git #{option_parser(options)} #{command}"
         run_cmd(cmd)
       end
 
       def add(*paths, **options)
-        run_git_cmd("add #{self.class.hash_option_parser(options)} #{paths.join(' ')}")
+        run_git_cmd("add #{hash_option_parser(options)} #{paths.join(' ')}")
       end
 
       def commit(message)
@@ -98,7 +44,19 @@ module Coaster
       end
 
       def submodule_update!(*paths, options: {})
-        run_git_cmd("submodule update #{self.class.option_parser(options)} #{paths.join(' ')}")
+        run_git_cmd("submodule update #{option_parser(options)} #{paths.join(' ')}")
+      end
+
+      def fetch(remote = 'origin', *options)
+        if remote.is_a?(Hash)
+          options = remote
+          remote = nil
+        end
+        run_git_cmd("fetch #{remote} #{option_parser(options)})")
+      end
+
+      def status(*pathspecs, **options)
+        run_git_cmd("status #{option_parser(options)} #{pathspecs.join(' ')}")
       end
 
       def current_sha
@@ -143,7 +101,7 @@ module Coaster
       end
 
       def remove
-        self.class.run_cmd(path.split('/')[0..-2].join('/'), "rm -rf #{path}")
+        run_cmd("rm -rf #{path}", path: path.split('/')[0..-2].join('/'))
       end
     end
   end

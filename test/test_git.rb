@@ -9,7 +9,7 @@ module Coaster
       @test_repo_root = File.expand_path('../../tmp/test_repo', __FILE__)
       FileUtils.rm_rf(@test_repo_root)
       FileUtils.mkdir_p(@test_repo_root)
-      @beta = Git::Repository.create(File.join(@test_repo_root, 'beta'))
+      @beta = Coaster::Git.create(File.join(@test_repo_root, 'beta'))
       @beta.run_cmd('echo "hello beta" > README.md')
       @beta.add('.')
       @beta.run_git_cmd('commit -m "hello"')
@@ -20,7 +20,7 @@ module Coaster
       @beta.run_git_cmd('commit -m "beta_feature"')
       @beta.run_git_cmd('checkout main')
 
-      @alpha = Git::Repository.create(File.join(@test_repo_root, 'alpha'))
+      @alpha = Coaster::Git.create(File.join(@test_repo_root, 'alpha'))
       @alpha.submodule_add!('sb/beta', @beta.path, git_options: {'-c' => {'protocol.file.allow' => 'always'}})
       @alpha.submodule_update!('sb/beta')
       @alpha.run_cmd('echo "hello alpha" > README.md')
