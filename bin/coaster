@@ -5,7 +5,7 @@ require 'coaster/git'
 
 command = ARGV.shift
 if command == 'git'
-  repo = Git::Repository.new(Dir.pwd)
+  repo = Coaster::Git::Repository.new(Dir.pwd)
   subcommand = ARGV.shift
   repo.send(subcommand, *ARGV)
 else
