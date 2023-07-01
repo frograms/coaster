@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.email = 'buzz@frograms.com'
   s.licenses = ['MIT']
 
-  s.files = `git ls-files bin lib *.md LICENSE Rakefile`.split("\n")
+  s.files = Dir['{app,bin,config,db,lib}/**/*'] + %w(LICENSE Rakefile README.md)
   s.bindir = 'bin'
   s.executables << 'coaster'
   s.test_files = Dir['test/**/*']
