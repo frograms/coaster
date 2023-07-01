@@ -75,10 +75,11 @@ module Coaster
         end.to_h
       end
 
-      def merge(pointer)
+      def merge(pointer, message: nil)
         pointers = pointers(pointer).join(',')
-        puts "#{path} merged deploy: #{pointers}"
-        run_git_cmd("merge #{pointer} --commit -m \"merged deploy: #{pointers}\"")
+        message ||= "merge: #{pointers}"
+        puts "#{path} #{message}"
+        run_git_cmd("merge #{pointer} --commit -m \"#{message}\"")
       end
 
       def submodule_sha(path, pointer: nil)
