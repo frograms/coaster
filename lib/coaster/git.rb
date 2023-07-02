@@ -6,10 +6,10 @@ module Coaster
       puts "#{path}: #{command}"
       stdout, stderr, status = Open3.capture3(command, chdir: path)
       if status.success?
-        puts "  ↳ success: #{stdout}"
+        puts "  ↳ success: #{stdout.split("\n").join("\n             ")}"
         stdout
       else
-        raise "Error executing command: #{command}\n  ↳ #{stderr}"
+        raise "Error executing command: #{command}\n  ↳ #{stderr.split("\n").join("\n    ")}"
       end
     end
 

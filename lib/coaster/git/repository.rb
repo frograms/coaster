@@ -78,7 +78,7 @@ module Coaster
       def merge(pointer, message: nil)
         pointers = pointers(pointer).join(',')
         message ||= "merge: #{pointers}"
-        puts "#{path} #{message}"
+        puts "[MERGE] #{path} #{message}"
         run_git_cmd("merge #{pointer} --commit -m \"#{message}\"")
       end
 
@@ -88,6 +88,7 @@ module Coaster
       end
 
       def deep_merge(pointer)
+        puts "[DEEP_MERGE] #{path} #{pointer}"
         submodules.values.each do |submodule|
           sm_sha = submodule_sha(submodule.path, pointer: pointer)
           submodule.merge(sm_sha)
@@ -97,7 +98,8 @@ module Coaster
 
       def pointers(sha)
         run_git_cmd("branch --contains #{sha}").split("\n").map do |br|
-          (br.start_with?('*') ? br[2..-1] : br).strip
+          br = (br.start_with?('*') ? br[2..-1] : br).strip
+          next if br.match?(/^\(.*\)$/)
         end
       end
 
