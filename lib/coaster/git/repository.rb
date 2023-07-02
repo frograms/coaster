@@ -99,8 +99,8 @@ module Coaster
       def pointers(sha)
         run_git_cmd("branch --contains #{sha}").split("\n").map do |br|
           br = (br.start_with?('*') ? br[2..-1] : br).strip
-          next if br.match?(/^\(.*\)$/)
-        end
+          br.match?(/^\(.*\)$/) ? nil : br
+        end.compact
       end
 
       def remove
