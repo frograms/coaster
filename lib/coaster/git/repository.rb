@@ -7,7 +7,6 @@ module Coaster
 
       def initialize(path)
         @path = path
-        @sha = current_sha
       end
 
       def run_cmd(command, path: nil)
@@ -15,12 +14,12 @@ module Coaster
       end
 
       def run_git_cmd(command, *options)
-        cmd = "git #{option_parser(options)} #{command}"
+        cmd = "git #{options_to_s(options)} #{command}"
         run_cmd(cmd)
       end
 
       def add(*paths, **options)
-        run_git_cmd("add #{hash_option_parser(options)} #{paths.join(' ')}")
+        run_git_cmd("add #{options_h_to_s(options)} #{paths.join(' ')}")
       end
 
       def commit(message)
@@ -44,7 +43,7 @@ module Coaster
       end
 
       def submodule_update!(*paths, options: {})
-        run_git_cmd("submodule update #{option_parser(options)} #{paths.join(' ')}")
+        run_git_cmd("submodule update #{options_to_s(options)} #{paths.join(' ')}")
       end
 
       def fetch(remote = 'origin', *options)
@@ -52,11 +51,11 @@ module Coaster
           options = remote
           remote = nil
         end
-        run_git_cmd("fetch #{remote} #{option_parser(options)})")
+        run_git_cmd("fetch #{remote} #{options_to_s(options)})")
       end
 
       def status(*pathspecs, **options)
-        run_git_cmd("status #{option_parser(options)} #{pathspecs.join(' ')}")
+        run_git_cmd("status #{options_to_s(options)} #{pathspecs.join(' ')}")
       end
 
       def current_sha
@@ -75,15 +74,18 @@ module Coaster
         end.to_h
       end
 
-      def merge(pointer, message: nil)
+      def merge(pointer, *options)
         pointers = pointers(pointer).join(',')
-        message ||= "merge: #{pointers}"
-        puts "[MERGE] #{path} #{message}"
-        run_git_cmd("merge #{pointer} --commit -m \"#{message}\"")
+        puts "[MERGE] #{path} #{pointers} #{options}"
+        opts = options_to_s(options)
+        opts_h = options_s_to_h(opts)
+        opts_h = options_h_merger(opts_h)
+        opts_h['--message'] ||= "Merge #{pointers}"
+        run_git_cmd("merge #{pointer} #{options_h_to_s(opts_h)}")
       end
 
       def submodule_sha(path, pointer: nil)
-        pointer ||= @sha
+        pointer ||= current_sha
         run_git_cmd("ls-tree #{pointer} #{path}").split(' ')[2]
       end
 
@@ -91,9 +93,9 @@ module Coaster
         puts "[DEEP_MERGE] #{path} #{pointer}"
         submodules.values.each do |submodule|
           sm_sha = submodule_sha(submodule.path, pointer: pointer)
-          submodule.merge(sm_sha)
+          submodule.merge(sm_sha, '--no-commit')
         end
-        merge(pointer)
+        merge(pointer, '--no-commit')
       end
 
       def pointers(sha)
