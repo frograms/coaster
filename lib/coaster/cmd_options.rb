@@ -97,7 +97,7 @@ module Coaster
       end
     end
 
-    attr_accessor :repository
+    attr_reader :cmd, :sub_cmd, :args, :remain_args, :options, :str
 
     def initialize(cmd, *args, **options)
       arg_options = args.extract_options!
@@ -111,11 +111,13 @@ module Coaster
       else
         @args = args
       end
-      if @args.first.is_a?(self.class)
-        options = @args.first.to_h.merge(options)
-      end
-      if @args.last.is_a?(self.class)
-        options = @args.last.to_h.merge(options)
+      @args.delete_if do |arg|
+        if arg.is_a?(self.class)
+          options = arg.to_h.merge(options)
+          true
+        else
+          false
+        end
       end
       options['--'] ||= []
       options['--'] += @remain_args if @remain_args

@@ -30,11 +30,6 @@ module Coaster
       @alpha.run_git_cmd('commit -m "hello"')
     end
 
-    def teardown
-      FileUtils.rm_rf(@test_repo_root)
-      super
-    end
-
     def test_git_deep_merge
       assert_equal "hello alpha\n", @alpha.run_cmd('cat README.md')
       assert_equal "hello beta\n", @alpha.run_cmd('cat sb/beta/README.md')

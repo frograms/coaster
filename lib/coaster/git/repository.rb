@@ -31,7 +31,7 @@ module Coaster
       end
 
       def commit(*args, **options)
-        opts = Options.new('commit', *options)
+        opts = Options.new('commit', *args, **options)
         opts['--message'] ||= "no message"
         run_git_cmd("commit", opts)
       end
@@ -109,6 +109,8 @@ module Coaster
         File.open(ga_file, 'w') do |f|
           f.puts ga_lines.join("\n")
         end
+        add('.')
+        commit
       end
 
       def deep_merge(pointer)
