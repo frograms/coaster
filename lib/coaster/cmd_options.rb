@@ -1,3 +1,5 @@
+require 'optparse'
+
 module Coaster
   class CmdOptions
     class << self
@@ -7,36 +9,6 @@ module Coaster
         when Array, Set then options.map{|o| options_to_s(o)}.join(' ')
         else options
         end
-      end
-
-      def options_s_to_h(options)
-        opts = {}
-        options = " #{options}"
-        options_indexes = options.enum_for(:scan, / -\w| --\w+| -- /).map { Regexp.last_match.begin(0) }
-        options_indexes << 0
-        options_indexes.each_cons(2) do |a, b|
-          option = options[a+1..b-1]
-          h = option_s_to_h(option)
-          options_h_merger(h, base: opts)
-        end
-        opts
-      end
-
-      def option_s_to_h(option)
-        if option.start_with?(/--\w/)
-          opt = option.split('=', 2)
-          opt << '' if opt.length == 1
-        elsif option.start_with?(/-\w/)
-          opt = option.split(' ', 2)
-          opt << '' if opt.length == 1
-        elsif option.start_with?('-- ')
-          opt = ['--', option[3..-1].split(' ')]
-        else
-          return {}
-        end
-        opt[1] = opt[1].split(',') if opt[1].include?(',')
-        opt[1] = opt[1].map{|s| s.include?('=') ? Hash[s.split('=', 2)] : s}.to_h if opt[1].is_a?(Array)
-        [opt].to_h
       end
 
       def option_v_to_s(option_v)
