@@ -1,4 +1,5 @@
 require 'open3'
+require 'active_support'
 require 'active_support/core_ext'
 
 module Coaster
