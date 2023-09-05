@@ -104,8 +104,8 @@ module Coaster
               default: default
           elsif type == Array
             _define_serialized_property(serialize_column, key, default: default || [])
-          elsif type.respond_to?(:serialized_property_settings) && (settings = type.serialized_property_settings)
-            _define_serialized_property(serialize_column, key, getter: settings[:getter], setter: settings[:setter], setter_callback: settings[:setter_callback], default: default)
+          elsif type.respond_to?(:serialized_property_serializer) && (serializer = type.serialized_property_serializer)
+            _define_serialized_property(serialize_column, key, getter: serializer[:getter], setter: serializer[:setter], setter_callback: serializer[:setter_callback], default: default)
           elsif type && type < ActiveRecord::Base
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
