@@ -85,6 +85,15 @@ module Coaster
                 end
               },
               default: default
+          elsif type == :unix_epoch
+            _define_serialized_property(serialize_column, key,
+              getter: Proc.new { |val| val.nil? ? nil : Time.zone.at(val) },
+              setter: Proc.new { |val|
+                raise TypeError, "serialized_property: only time can be accepted: #{val.class}" unless val.is_a?(Time)
+                val.to_i
+              },
+              default: default
+            )
           elsif type == Integer
             _define_serialized_property serialize_column, key,
               setter: proc { |val|
@@ -95,6 +104,8 @@ module Coaster
               default: default
           elsif type == Array
             _define_serialized_property(serialize_column, key, default: default || [])
+          elsif type.respond_to?(:serialized_property_settings) && (settings = type.serialized_property_settings)
+            _define_serialized_property(serialize_column, key, getter: settings[:getter], setter: settings[:setter], setter_callback: settings[:setter_callback], default: default)
           elsif type && type < ActiveRecord::Base
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
