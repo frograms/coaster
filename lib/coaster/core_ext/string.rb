@@ -63,8 +63,8 @@ class String
     end
   end
 
-  def to_full_characters
-    # 반각 문자 -> 전각 문자(숫자, 알파벳 only)
+  # @note 반각 문자 -> 전각 문자(숫자, 알파벳, 기호 only)
+  def to_full_characters(with_symbol: false)
     result = String.new
     return result if self.blank?
 
@@ -76,6 +76,7 @@ class String
                  when ('0'.ord)..('9'.ord) then full_ord
                  when ('A'.ord)..('Z'.ord) then full_ord
                  when ('a'.ord)..('z'.ord) then full_ord
+                 when ('!'.ord)..('~'.ord) then with_symbol ? full_ord : half_ord
                  else half_ord
                  end
       result << char_ord.chr('UTF-8')
@@ -83,8 +84,8 @@ class String
     result
   end
 
-  def to_half_characters
-    # 전각 문자 -> 반각 문자 (숫자, 알파벳 only)
+  # @note 전각 문자 -> 반각 문자 (숫자, 알파벳 only)
+  def to_half_characters(with_symbol: false)
     result = String.new
     return result if self.blank?
 
@@ -96,6 +97,7 @@ class String
                  when ('0'.ord + 0xfee0)..('9'.ord + 0xfee0) then half_ord
                  when ('A'.ord + 0xfee0)..('Z'.ord + 0xfee0) then half_ord
                  when ('a'.ord + 0xfee0)..('z'.ord + 0xfee0) then half_ord
+                 when ('!'.ord + 0xfee0)..('~'.ord + 0xfee0) then with_symbol ? half_ord : full_ord
                  else full_ord
                  end
       result << char_ord.chr('UTF-8')
@@ -241,5 +243,4 @@ class String
       matcher.match(haystack)
     end
   end
-
 end
