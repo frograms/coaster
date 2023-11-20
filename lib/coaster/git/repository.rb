@@ -117,10 +117,10 @@ module Coaster
         puts "[DEEP_MERGE] #{path} #{pointer}"
         submodules.values.each do |submodule|
           sm_sha = submodule_sha(submodule.path, pointer: pointer)
-          submodule.merge(sm_sha)
+          submodule.merge(sm_sha) if sm_sha.present?
         end
         merge_without_submodules do
-          merge(pointer)
+          merge(pointer) if pointer.present?
         end
       end
 
