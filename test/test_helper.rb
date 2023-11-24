@@ -2,6 +2,8 @@ ENV['DEBUG'] = 'true'
 
 require 'minitest'
 require 'pry'
+require 'pry-byebug'
+require 'pry-stack_explorer'
 
 require 'rubygems'
 require 'bundler/setup'

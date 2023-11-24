@@ -64,22 +64,16 @@ module Coaster
       not_target_full_seq = ((33..255).map { |c| (c + 0xfee0).chr('UTF-8') }.join.chars - full_seq.chars).join + '일이삼いちにさんイチニサン一二三'
       mixed_str = full_seq + not_target_full_seq
       # full -> half 1:1 잘 변환되는가?
-      expect(full_seq.to_half_characters(symbol: true)).to eq half_seq
       assert_equal full_seq.to_half_characters(symbol: true), half_seq
       # full -> half -> full 변환 시, 원래 string 유지되는가?
-      expect(full_seq.to_half_characters(symbol: true).to_full_characters(symbol: true)).to eq full_seq
       assert_equal full_seq.to_half_characters(symbol: true).to_full_characters(symbol: true), full_seq
       # not_target string은 to half 변환 시도시 원본이 유지되는가?
-      expect(not_target_full_seq.to_half_characters(symbol: true)).to eq not_target_full_seq
       assert_equal not_target_full_seq.to_half_characters(symbol: true), not_target_full_seq
       # target / not_target이 섞여있는 문장에서, target'만' half로 변환되는가?
-      expect(mixed_str.to_half_characters(symbol: true)).to eq half_seq + not_target_full_seq
       assert_equal mixed_str.to_half_characters(symbol: true), half_seq + not_target_full_seq
       # target / not_target이 섞여있는 문장에서, full -> half -> full 변환시, 원래 string 유지되는가?
-      expect(mixed_str.to_half_characters(symbol: true).to_full_characters(symbol: true)).to eq mixed_str
       assert_equal mixed_str.to_half_characters(symbol: true).to_full_characters(symbol: true), mixed_str
       # 공백문자열에 다른게 추가되지는 않는가?
-      expect(''.to_half_characters(symbol: true)).to eq ''
       assert_equal ''.to_half_characters(symbol: true), ''
     end
   end
