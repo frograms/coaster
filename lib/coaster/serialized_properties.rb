@@ -106,7 +106,7 @@ module Coaster
             _define_serialized_property(serialize_column, key, default: default || [])
           elsif type.respond_to?(:serialized_property_serializer) && (serializer = type.serialized_property_serializer)
             _define_serialized_property(serialize_column, key, getter: serializer[:getter], setter: serializer[:setter], setter_callback: serializer[:setter_callback], default: default)
-          elsif type && type < ActiveRecord::Base
+          elsif type.is_a?(Class) && type < ActiveRecord::Base
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
             define_method key.to_sym do
