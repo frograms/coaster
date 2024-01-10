@@ -1,23 +1,26 @@
 require 'attr_extras'  # gem
 
 class Month
-  vattr_initialize :_year, :_month
+  attr_reader :_year, :_month
+  attr_reader :timezone
 
   class << self
-    def from(object)
+    def from(object, timezone: nil)
       case object
-        when Month then object
-        when String then Month.parse(object)
-        when Array then Month.new(object[0], object[1])
-        else new(object.year, object.month)
+        when Month 
+          object.timezone = timezone
+          object
+        when String then Month.parse(object, timezone: timezone)
+        when Array then Month.new(object[0], object[1], timezone: timezone)
+        else new(object.year, object.month, timezone: timezone)
       end
     end
 
     # Month.parse('201601')
     # Month.parse('2016-01')
-    def parse(str)
+    def parse(str, timezone: nil)
       date = Date.parse(str)
-      from(date)
+      from(date, timezone: timezone)
     rescue ArgumentError => e
       if str.instance_variable_defined?(:@_gsub_) && str.instance_variable_get(:@_gsub_)
         raise e, str: str.instance_variable_get(:@_gsub_)
@@ -28,7 +31,7 @@ class Month
       str_gsub.insert(4, '0') if str_gsub.length == 5
       str_gsub += '01'
       str_gsub.instance_variable_set(:@_gsub_, str_gsub)
-      parse(str_gsub)
+      parse(str_gsub, timezone: timezone)
     end
 
     def current
@@ -40,6 +43,17 @@ class Month
     end
   end
 
+  def initialize(year, month, timezone: nil)
+    @_year = year
+    @_month = month
+    self.timezone = timezone
+  end
+
+  def timezone=(tz)
+    tz = ActiveSupport::TimeZone[tz] if tz.is_a?(String)
+    @timezone = tz || Time.zone
+  end
+
   def year
     Integer(@_year)
   end
@@ -49,11 +63,11 @@ class Month
   end
 
   def first_date
-    Date.new(year, month, 1)
+    @first_date ||= Date.new(year, month, 1)
   end
 
   def last_date
-    Date.new(year, month, -1)
+    @last_date ||= Date.new(year, month, -1)
   end
 
   def each_date(&block)
@@ -69,11 +83,11 @@ class Month
   end
 
   def beginning_of_month
-    first_date.beginning_of_day
+    first_date.in_time_zone(timezone)
   end
 
   def end_of_month
-    last_date.end_of_day
+    last_date.in_time_zone(timezone).end_of_day
   end
 
   def date_for_day(number)
@@ -93,16 +107,24 @@ class Month
   end
 
   def to_s
-    "#{year}-#{month}"
+    first_date.strftime('%Y-%m')
   end
   alias_method :inspect, :to_s
 
   def -(time)
-    first_date - time
+    case time
+    when ActiveSupport::Duration then first_date.in_time_zone(timezone) - time
+    else
+      first_date - time
+    end
   end
 
   def +(time)
-    first_date + time
+    case time
+    when ActiveSupport::Duration then first_date.in_time_zone(timezone) + time
+    else
+      first_date + time
+    end
   end
 
   include Comparable

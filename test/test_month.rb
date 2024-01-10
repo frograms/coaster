@@ -9,6 +9,13 @@ module Coaster
       assert_equal m.last_date, Date.parse('20200131')
       assert_equal m.end_of_month, Date.parse('20200131').end_of_day
       assert_equal m.to_time_range, Date.parse('20200101').beginning_of_day...Date.parse('20200201').beginning_of_day
+      assert_equal m.to_s, '2020-01'
+    end
+
+    def test_timezone
+      m = Month.parse('202001', timezone: 'Pacific/Midway')
+      assert_equal m.timezone, ActiveSupport::TimeZone['Pacific/Midway']
+      assert_equal m.beginning_of_month, Date.parse('20200101').in_time_zone('Pacific/Midway')
     end
 
     def test_next_specific_date
@@ -24,11 +31,13 @@ module Coaster
       assert_equal d.next_specific_date(29), Date.parse('20200229')
       d = Date.parse('20200210')
       assert_equal d.next_specific_date(29), Date.parse('20200229')
+      assert_equal d.next_specific_date(30), Date.parse('20200229')
       assert_equal d.next_specific_date(31), Date.parse('20200229')
       d = Date.parse('20210210')
       assert_equal d.next_specific_date(9), Date.parse('20210309')
       assert_equal d.next_specific_date(10), Date.parse('20210310')
       assert_equal d.next_specific_date(29), Date.parse('20210228')
+      assert_equal d.next_specific_date(30), Date.parse('20210228')
       assert_equal d.next_specific_date(31), Date.parse('20210228')
       d = Date.parse('20210228')
       assert_equal d.next_specific_date(31), Date.parse('20210331')
