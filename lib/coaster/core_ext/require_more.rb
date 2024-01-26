@@ -13,7 +13,7 @@ def require_more
   more_load_paths = $LOAD_PATH.drop(load_path_index + 1)
   more_load_paths.each do |load_path|
     path = File.join(load_path, load_name)
-    if File.exists?(path)
+    if File.exist?(path)
       return require_dependency path
     end
   end
