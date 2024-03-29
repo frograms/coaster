@@ -113,18 +113,22 @@ class Month
 
   def -(time)
     case time
-    when ActiveSupport::Duration then first_date.in_time_zone(timezone) - time
+    when ActiveSupport::Duration then Month.from(first_date.in_time_zone(timezone) - time)
     else
-      first_date - time
+      Month.from(first_date - time)
     end
   end
 
   def +(time)
     case time
-    when ActiveSupport::Duration then first_date.in_time_zone(timezone) + time
+    when ActiveSupport::Duration then Month.from(first_date.in_time_zone(timezone) + time)
     else
-      first_date + time
+      Month.from(first_date + time)
     end
+  end
+
+  def cover?(t)
+    to_time_range.cover?(t)
   end
 
   include Comparable

@@ -3,6 +3,10 @@ require 'minitest/autorun'
 
 module Coaster
   class TestMonth < Minitest::Test
+    def setup
+      Time.zone = 'Asia/Seoul'
+    end
+
     def test_month
       m = Month.parse('202001')
       assert_equal m.year, 2020
@@ -57,6 +61,12 @@ module Coaster
       assert_equal d.prev_specific_date(29), Date.parse('20200129')
       assert_equal d.prev_specific_date(30), Date.parse('20200130')
       assert_equal d.prev_specific_date(31), Date.parse('20200131')
+    end
+
+    def test_range
+      mn = Month.now
+      range = (mn..mn)
+      assert range.cover?(Month.from(Date.today))
     end
   end
 end
