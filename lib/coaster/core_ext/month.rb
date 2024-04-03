@@ -140,4 +140,12 @@ class Month
   def succ
     later
   end
+
+  def hash
+    first_date.hash
+  end
+
+  def eql?(other)
+    other.is_a?(Month) && first_date == other.first_date
+  end
 end

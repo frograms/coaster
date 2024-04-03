@@ -68,5 +68,10 @@ module Coaster
       range = (mn..mn)
       assert range.cover?(Month.from(Date.today))
     end
+
+    def test_hash
+      h = {Month.now => 1}
+      assert_equal h[Month.now], 1
+    end
   end
 end
