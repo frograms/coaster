@@ -98,6 +98,10 @@ class Month
     beginning_of_month...(later.beginning_of_month)
   end
 
+  def to_date_range
+    first_date..last_date
+  end
+
   def previous
     self.class.from(first_date - 1)
   end
