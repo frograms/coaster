@@ -1,6 +1,11 @@
 class Date
-  def to_time_range
-    beginning_of_day...(self + 1.day).beginning_of_day
+  def to_time_range(timezone = nil)
+    if timezone
+      b_day = in_time_zone(timezone)
+      b_day...(b_day + 1.day)
+    else
+      beginning_of_day...(self + 1.day).beginning_of_day
+    end
   end
 
   def prev_specific_date(day_num)
