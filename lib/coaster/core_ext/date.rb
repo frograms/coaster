@@ -1,6 +1,7 @@
 class Date
   def to_time_range(timezone = nil)
     if timezone
+      timezone = ActiveSupport::TimeZone[timezone] if timezone.is_a?(String)
       b_day = in_time_zone(timezone)
       b_day...(b_day + 1.day)
     else
