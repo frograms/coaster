@@ -106,7 +106,7 @@ module Coaster
             _define_serialized_property(serialize_column, key, default: default || [])
           elsif type.respond_to?(:serialized_property_serializer) && (serializer = type.serialized_property_serializer)
             _define_serialized_property(serialize_column, key, getter: serializer[:getter], setter: serializer[:setter], setter_callback: serializer[:setter_callback], default: default)
-          elsif type.is_a?(Class) && type < ActiveRecord::Base
+          elsif (type.is_a?(Symbol) && (t = type.to_s.constantize rescue nil)) || (type.is_a?(Class) && type < ActiveRecord::Base && (t = type))
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
             define_method key.to_sym do
@@ -116,10 +116,10 @@ module Coaster
               if key_id.nil?
                 instance_val = nil
               else
-                instance_val = type.find(key_id) rescue nil
-                instance_variable_set("@#{key}".to_sym, instance_val)
+                instance_val = t.find(key_id) rescue nil
               end
               instance_val = getter.call(instance_val) if getter
+              instance_variable_set("@#{key}".to_sym, instance_val)
               instance_val
             end
 
@@ -130,8 +130,8 @@ module Coaster
                 instance_variable_set("@#{key}".to_sym, nil)
                 send("#{key}_id=".to_sym, nil)
               else
-                unless val.is_a?(type)
-                  raise ActiveRecord::AssociationTypeMismatch, "#{type}(##{type.object_id}) expected, got #{val.class.name}(#{val.class.object_id})"
+                unless val.is_a?(t)
+                  raise ActiveRecord::AssociationTypeMismatch, "#{t}(##{t.object_id}) expected, got #{val.class.name}(#{val.class.object_id})"
                 end
                 instance_variable_set("@#{key}".to_sym, val)
                 send("#{key}_id=".to_sym, (Integer(val.id) rescue val.id))
