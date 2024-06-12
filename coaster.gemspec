@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'oj'
   s.add_dependency 'i18n', '>= 1.0'
   s.add_dependency 'rake', '>= 10.0'
-  s.add_dependency 'activesupport', '~> 7.0.7'
+  s.add_dependency 'activesupport', '=> 7.0.7'
   s.add_dependency 'attr_extras', '~> 5.2'
 
   s.add_development_dependency 'bundler'
