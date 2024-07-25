@@ -52,7 +52,8 @@ module Coaster
         end
 
         array_keys = (array_start...(step2.keys.size+array_start)).to_a
-        if array_keys == step2.keys.map(&:to_i).sort
+        step2_keys = step2.keys.map {|k| Integer(k)} rescue nil
+        if array_keys == step2_keys
           step3 = []
           array_keys.map(&:to_s).each do |k|
             step3 << step2[k]

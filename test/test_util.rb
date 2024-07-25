@@ -38,5 +38,12 @@ module Coaster
       b = Util.roughen_hashify(res, array_start: 1, delimiter: '/')
       assert_equal(a, b)
     end
+
+    def test_roughen_hashify
+      assert_equal({'a'=> [2, 3]}, Util.roughen_hashify({'a.0' => 2, 'a.1' => 3}))
+      assert_equal({'a'=> [2, 3]}, Util.roughen_hashify({'a.1' => 2, 'a.2' => 3}, array_start: 1))
+      res = Util.roughen_hashify({"1.a"=>1, "2"=>22, "3.1"=>33, "3.2"=>44, "4.b.c.1"=>33, "4.b.c.2.d"=>4}, array_start: 1)
+      assert_equal([{"a"=>1}, 22, [33, 44], {"b"=>{"c"=>[33, {"d"=>4}]}}], res)
+    end
   end
 end
