@@ -25,16 +25,16 @@ module Coaster
       cm || key.to_s
     end
 
-    def serialized_property(serialize_column, key, type: nil, comment: nil, getter: nil, setter: nil, setter_callback: nil, default: nil)
+    def serialized_property(serialize_column, key, type: nil, comment: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
       raise DuplicatedProperty, "#{self.name}##{key} duplicated\n#{caller[0..5].join("\n")}" if serialized_property_settings[key.to_sym]
-      serialized_property_settings[key.to_sym] = {type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default}
-      _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default)
+      serialized_property_settings[key.to_sym] = {type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer}
+      _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer)
     end
 
-    def serialized_properties(serialize_column, *keys, type: nil, getter: nil, setter: nil, setter_callback: nil, default: nil)
+    def serialized_properties(serialize_column, *keys, type: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
       keys.flatten.each do |key|
         key_name = key
-        prop_hash = {type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default}
+        prop_hash = {type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer}
         if key.is_a? Hash
           key_name = key[:key]
           prop_hash = {type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default}.merge(key)
@@ -46,7 +46,7 @@ module Coaster
 
     private
 
-    def _typed_serialized_property(serialize_column, key, type: nil, getter: nil, setter: nil, setter_callback: nil, default: nil)
+    def _typed_serialized_property(serialize_column, key, type: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
       case type
         when String then
           # String은 나중에 eval해서 가져옴,
@@ -55,14 +55,25 @@ module Coaster
             if type.is_a?(String)
               begin
                 type = eval(type)
-                raise InvalidProperty, "#{self.name}##{key} type string is return string #{type}" if type.is_a?(String)
+                raise InvalidProperty, m: "#{self.name}##{key} type string is return string #{type}", type: type if type.is_a?(String)
               rescue InvalidProperty => e
-                raise
+                if rescuer
+                  type = rescuer.call(e)
+                else
+                  raise
+                end
               rescue => e
-                raise InvalidProperty, "#{self.name}##{key} eval failed: type:[#{type}] [#{e.class.name}] #{e.message}"
+                e.attributes[:type] = type
+                if rescuer
+                  type = rescuer.call(e)
+                else
+                  raise InvalidProperty, "#{self.name}##{key} eval failed: type:[#{type}] [#{e.class.name}] #{e.message}"
+                end
               end
-              serialized_property_setting(key.to_sym)[:type] = type
-              _typed_serialized_property serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default
+              if type
+                serialized_property_setting(key.to_sym)[:type] = type
+                _typed_serialized_property serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default
+              end
             end
           }
         when Array then
