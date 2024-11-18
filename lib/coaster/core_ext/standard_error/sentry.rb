@@ -1,5 +1,6 @@
 class StandardError
   attr_writer :raven
+  attr_reader :sentry_event
 
   alias_method :initialize_original, :initialize
   def initialize(message = nil, cause = $!)
@@ -42,7 +43,7 @@ class StandardError
     return if options.key?(:report) && !options[:report]
     return unless report?
     nt = notes(options)
-    Sentry.capture_exception(self, level: nt[:level]) do |scope|
+    @sentry_event = Sentry.capture_exception(self, level: nt[:level]) do |scope|
       scope.user.merge!(nt[:user] || {})
       scope.tags.merge!(nt[:tags])
       scope.extra.merge!(nt[:extra])
@@ -52,6 +53,10 @@ class StandardError
     msg = "#{e.class.name}: #{e.message}"
     msg += "\n\t" + e.backtrace.join("\n\t")
     Sentry.logger.error(msg)
+  end
+
+  def sentry_event_id
+    @sentry_event&.event_id
   end
 
   # options
