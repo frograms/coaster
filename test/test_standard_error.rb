@@ -316,7 +316,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "standard error translation (3dd84e #{bt})", e.user_message
+      assert_equal "standard error translation (bc1746 #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 

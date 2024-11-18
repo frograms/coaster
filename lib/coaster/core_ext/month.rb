@@ -82,20 +82,37 @@ class Month
     last_date.day
   end
 
-  def beginning_of_month
-    first_date.in_time_zone(timezone)
+  def _timezone(timezone)
+    tz = timezone || self.timezone
+    tz = ActiveSupport::TimeZone[tz] if tz.is_a?(String)
+    tz
+  end
+
+  def beginning_of_month(timezone = nil)
+    tz = _timezone(timezone)
+    first_date.in_time_zone(tz)
   end
 
   def end_of_month
-    last_date.in_time_zone(timezone).end_of_day
+    tz = _timezone(timezone)
+    last_date.in_time_zone(tz).end_of_day
   end
 
   def date_for_day(number)
     Date.new(year, month, number)
   end
 
-  def to_time_range
-    beginning_of_month...(later.beginning_of_month)
+  def to_time_range(timezone = nil)
+    tz = _timezone(timezone)
+    beginning_of_month(tz)...(later.beginning_of_month(tz))
+  end
+
+  def beginning_of_range(timezone = nil)
+    to_time_range(timezone).begin
+  end
+
+  def end_of_range(timezone = nil)
+    to_time_range(timezone).end
   end
 
   def to_date_range

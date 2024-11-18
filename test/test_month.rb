@@ -73,5 +73,20 @@ module Coaster
       h = {Month.now => 1}
       assert_equal h[Month.now], 1
     end
+
+    def test_range_timezone
+      m = Month.parse('202001', timezone: 'Asia/Seoul')
+      assert_equal m.beginning_of_range('Asia/Seoul'), Date.parse('20200101').in_time_zone('Asia/Seoul')
+      assert_equal m.end_of_range('Asia/Seoul'), Date.parse('20200201').in_time_zone('Asia/Seoul')
+      assert m.to_time_range.exclude_end?
+      d = Date.parse('20200101')
+      assert_equal d.beginning_of_range('Asia/Seoul'), Date.parse('20200101').in_time_zone('Asia/Seoul')
+      assert_equal d.end_of_range('Asia/Seoul'), Date.parse('20200102').in_time_zone('Asia/Seoul')
+      assert d.to_time_range.exclude_end?
+      t = Time.parse('20200101 12:12:12.123456')
+      assert_equal t.beginning_of_range('Asia/Seoul'), Time.parse('20200101 12:12:12').in_time_zone('Asia/Seoul')
+      assert_equal t.end_of_range('Asia/Seoul'), Time.parse('20200101 12:12:13').in_time_zone('Asia/Seoul')
+      assert t.to_time_range.exclude_end?
+    end
   end
 end

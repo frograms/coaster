@@ -1,12 +1,16 @@
 class Date
-  def to_time_range(timezone = nil)
-    if timezone
-      timezone = ActiveSupport::TimeZone[timezone] if timezone.is_a?(String)
-      b_day = in_time_zone(timezone)
-      b_day...(b_day + 1.day)
-    else
-      beginning_of_day...(self + 1.day).beginning_of_day
-    end
+  def to_time_range(timezone = ::Time.zone)
+    timezone = ActiveSupport::TimeZone[timezone] if timezone.is_a?(String)
+    b_day = in_time_zone(timezone)
+    b_day...(b_day + 1.day)
+  end
+
+  def beginning_of_range(timezone = ::Time.zone)
+    to_time_range(timezone).begin
+  end
+
+  def end_of_range(timezone = ::Time.zone)
+    to_time_range(timezone).end
   end
 
   def prev_specific_date(day_num)
