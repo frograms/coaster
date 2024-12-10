@@ -1,2 +1,4 @@
 require 'coaster/rails_ext/backtrace_cleaner'
-require 'coaster/rails_ext/active_record/errors'
+ActiveSupport.on_load(:active_record, yield: true) do
+  require 'coaster/rails_ext/active_record/errors'
+end
