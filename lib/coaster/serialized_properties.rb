@@ -92,7 +92,7 @@ module Coaster
               getter: Proc.new { |val| val.nil? ? nil : Time.zone.parse(val) },
               setter: Proc.new { |val|
                 if val.is_a?(Time)
-                  val.respond_to?(:to_fs) ? val.to_fs(:default_tz) : val.to_s(:default_tz)
+                  val.utc.iso8601(6)
                 end
               },
               default: default
