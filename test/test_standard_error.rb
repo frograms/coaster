@@ -193,6 +193,20 @@ module Coaster
         raise err
       end
     rescue => e
+      ih = e.to_inspection_hash
+      assert_equal 'Coaster::TestStandardError::ExampleError', ih['type']
+      assert_equal 20, ih['status']
+      assert_equal 500, ih['http_status']
+      assert_equal "Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}", ih['message']
+      assert ih['instance_variables']['@coaster']
+      assert_instance_of Array, ih['backtrace']
+      assert_equal 'Coaster::TestStandardError::SampleError', ih['cause']['type']
+      assert_equal 10, ih['cause']['status']
+      assert_equal 500, ih['cause']['http_status']
+      assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", ih['cause']['message']
+      assert ih['cause']['instance_variables']['@coaster']
+      assert_instance_of Array, ih['cause']['backtrace']
+
       detail = e.to_inspection_s
       detail_front = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
@@ -316,7 +330,7 @@ LOG
       assert_equal 'NameError', e.to_hash['type']
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
-      assert_equal "standard error translation (bc1746 #{bt})", e.user_message
+      assert_equal "standard error translation (#{e.digest_message} #{bt})", e.user_message
       assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
     end
 
