@@ -22,7 +22,9 @@ class ActiveSupport::BacktraceCleaner
       end
 
       backtrace = backtrace.to_a
-      backtrace.insert(minimum_first, 'BacktraceCleaner.minimum_first ... and next silenced backtraces')
+      if minimum_first < backtrace.size
+        backtrace.insert(minimum_first, 'BacktraceCleaner.minimum_first ... and next silenced backtraces')
+      end
       backtrace
     end
 end

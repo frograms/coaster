@@ -1,6 +1,6 @@
 require 'digest'
 require 'coaster/core_ext/object_translation'
-require 'coaster/rails_ext/backtrace_cleaner'
+require 'coaster/rails_ext/active_support/backtrace_cleaner'
 require 'pp'
 
 class StandardError

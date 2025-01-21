@@ -119,7 +119,7 @@ cleaner(`AcitveSupport::BacktraceCleaner`)는 `StandardError.cleaner=`, `Standar
    1. `detail_value_proc` 기본값은 `Proc.new{|val| val.inspect}`
    1. 나머지는 `StandardError.detail_value_simpe`로 처리하며 class name만 사용한다.
 
-## coaster/rails_ext/backtrace_cleaner
+## coaster/rails_ext/active_support/backtrace_cleaner
 
 [`AcitveSupport::BacktraceCleaner`](https://github.com/rails/rails/blob/main/activesupport/lib/active_support/backtrace_cleaner.rb)에서
 앞쪽은 `silence!`에서 제외하는(즉 모든 backtrace가 포함되는) 로직이 추가된다.   
