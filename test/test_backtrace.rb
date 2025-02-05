@@ -134,6 +134,16 @@ module Coaster
         activesupport (6.1.4.4) lib/active_support/callbacks.rb:512:in `block in invoke_before'
         activesupport (6.1.4.4) lib/active_support/callbacks.rb:512:in `each'
         activesupport (6.1.4.4) lib/active_support/callbacks.rb:512:in `invoke_before'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:115:in `block in run_callbacks'
+        vanity (ce67b2c66864) lib/vanity/frameworks/rails.rb:141:in `vanity_context_filter'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:126:in `block in run_callbacks'
+        actiontext (6.1.4.4) lib/action_text/rendering.rb:20:in `with_renderer'
+        actiontext (6.1.4.4) lib/action_text/engine.rb:59:in `block (4 levels) in <class:Engine>'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:126:in `instance_exec'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:126:in `block in run_callbacks'
+        react-rails (2.6.1) lib/react/rails/controller_lifecycle.rb:31:in `use_react_component_helper'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:126:in `block in run_callbacks'
+        activesupport (6.1.4.4) lib/active_support/callbacks.rb:137:in `run_callbacks'
         BacktraceCleaner.minimum_first ... and next silenced backtraces
         /home/circleci/project/spec/controllers/api/funfun_controller_spec.rb:77:in `block (5 levels) in <top (required)>'
         /home/circleci/project/spec/controllers/api/funfun_controller_spec.rb:6:in `block (3 levels) in <top (required)>'
@@ -164,7 +174,7 @@ module Coaster
         Gem.stub :default_path, [] do
           cleaner = ActiveSupport::BacktraceCleaner.new
           bt = cleaner.clean(@backtrace)
-          assert_equal bt, @expected_bt
+          assert_equal bt.join("\n"), @expected_bt.join("\n")
         end
       end
     end
@@ -174,7 +184,7 @@ module Coaster
         Gem.stub :default_path, [] do
           cleaner = ActiveSupport::BacktraceCleaner.new
           bt = cleaner.clean(@backtrace.lazy)
-          assert_equal bt, @expected_bt
+          assert_equal bt.join("\n"), @expected_bt.join("\n")
         end
       end
     end

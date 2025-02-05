@@ -1,7 +1,7 @@
 require 'active_support/backtrace_cleaner'
 
 class ActiveSupport::BacktraceCleaner
-  cattr_accessor :minimum_first, default: 10
+  cattr_accessor :minimum_first, default: 20
 
   attr_writer :minimum_first
 
