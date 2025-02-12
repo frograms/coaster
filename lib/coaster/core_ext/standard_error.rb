@@ -234,6 +234,7 @@ class StandardError
       http_status: http_status, message: message,
       instance_variables: {}.with_indifferent_access
     )
+    digest_backtrace # for @digest_backtrace
     instance_variables.sort.each do |var|
       if inspection_vars.include?(var)
         val = instance_variable_get(var)

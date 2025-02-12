@@ -213,7 +213,7 @@ module Coaster
   MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
   @attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
   @coaster: true
-  @digest_backtrace: NilClass
+  @digest_backtrace: #{e.digest_backtrace}
   @digest_message: a8c7c1
   @fingerprint: ["a8c7c1"]
   @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\"=>1}]
@@ -231,7 +231,7 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
     @attributes: {"frog"=>"rams"}
     @coaster: true
-    @digest_backtrace: NilClass
+    @digest_backtrace: #{e.cause.digest_backtrace}
     @digest_message: cbe233
     @fingerprint: ["cbe233"]
     @level: "error"
