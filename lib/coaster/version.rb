@@ -1,3 +1,3 @@
 module Coaster
-  VERSION = '1.4.23'
+  VERSION = '1.4.25'
 end

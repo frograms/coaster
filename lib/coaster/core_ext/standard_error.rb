@@ -63,7 +63,8 @@ class StandardError
     end
   end
 
-  attr_accessor :tags, :level, :tkey, :fingerprint
+  attr_accessor :tags, :level, :tkey
+  attr_writer :fingerprint
 
   def initialize(message = nil, cause = $!)
     @fingerprint = Coaster.default_fingerprint.dup
@@ -122,11 +123,12 @@ class StandardError
     @digest_message = self.class.digest_message(msg)
     set_backtrace(message.backtrace) if message.is_a?(Exception)
     @fingerprint << @digest_message
-    @fingerprint << digest_backtrace
     @fingerprint.compact!
     self
   end
 
+  # @return [Array, NilClass] fingerprint
+  def fingerprint; @fingerprint.is_a?(Array) && @fingerprint + [digest_backtrace] end
   def safe_message; message || '' end
   def digest_message; @digest_message ||= self.class.digest_message(message) end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
@@ -232,6 +234,7 @@ class StandardError
       http_status: http_status, message: message,
       instance_variables: {}.with_indifferent_access
     )
+    digest_backtrace # for @digest_backtrace
     instance_variables.sort.each do |var|
       if inspection_vars.include?(var)
         val = instance_variable_get(var)
