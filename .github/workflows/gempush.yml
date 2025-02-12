@@ -14,11 +14,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+      with:
+        fetch-depth: 2
 
     - name: Check if version.rb has changed
       id: version_check
       run: |
-        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^lib/coaster/version.rb$"; then
+        PREV_COMMIT=${{ github.event.before }}
+        if [ -z "$PREV_COMMIT" ] || [ "$PREV_COMMIT" == "0000000000000000000000000000000000000000" ]; then
+          PREV_COMMIT=$(git rev-parse HEAD~1)
+        fi
+
+        if git diff --name-only $PREV_COMMIT ${{ github.sha }} | grep -q "^lib/coaster/version.rb$"; then
           echo "VERSION_CHANGED=true" >> $GITHUB_ENV
         else
           echo "VERSION_CHANGED=false" >> $GITHUB_ENV
