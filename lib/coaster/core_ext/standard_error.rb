@@ -229,6 +229,7 @@ class StandardError
   end
 
   def to_inspection_hash(options: {}, _h: {}.with_indifferent_access, _depth: 0)
+    backtrace_key = options[:backtrace_key] || :backtrace
     _h.merge!(
       type: self.class.name, status: status,
       http_status: http_status, message: message,
@@ -250,12 +251,12 @@ class StandardError
     if backtrace.present?
       if respond_to?(:cleaned_backtrace)
         if (bt = cleaned_backtrace(options))
-          _h[:backtrace] = bt
+          _h[backtrace_key] = bt
         else
-          _h[:backtrace] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
+          _h[backtrace_key] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
         end
       else
-        _h[:backtrace] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
+        _h[backtrace_key] = backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first]
       end
     end
     if cause
@@ -267,7 +268,7 @@ class StandardError
             type: self.class.name, status: status,
             http_status: http_status, message: message,
           }
-          cause_h.merge!(backtrace: cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first])
+          cause_h.merge!(backtrace_key => cause.backtrace[0...ActiveSupport::BacktraceCleaner.minimum_first])
           _h[:cause] = cause_h
         end
       else
