@@ -14,7 +14,9 @@ def require_more
   more_load_paths.each do |load_path|
     path = File.join(load_path, load_name)
     if File.exist?(path)
-      return require path
+      loaded = require(path)
+      loaded = load(path) unless loaded
+      return loaded
     end
   end
 
