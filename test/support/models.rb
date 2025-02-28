@@ -2,7 +2,7 @@ require 'coaster/serialized_properties'
 require 'coaster/safe_yaml_serializer'
 
 class User < ActiveRecord::Base
-  serialize :data, Coaster::SafeYamlSerializer
+  serialize :data, coder: Coaster::SafeYamlSerializer
   extend Coaster::SerializedProperties
   serialized_column :data
   serialized_property :data, :appendix, default: {}
