@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coaster (1.4.25)
+    coaster (1.4.27)
       activesupport (>= 7.0.7)
       attr_extras (~> 5.2)
       i18n (>= 1.0)
@@ -137,7 +137,7 @@ GEM
     nokogiri (1.16.5)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    oj (3.16.9)
+    oj (3.16.10)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
     ostruct (0.6.1)
