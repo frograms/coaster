@@ -38,3 +38,5 @@ build/
 # intellij
 .idea
 dump.rdb
+.vscode
+*.code-workspace
