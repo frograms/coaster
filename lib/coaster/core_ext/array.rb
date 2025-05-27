@@ -8,4 +8,15 @@ class Array
       true
     end
   end
+
+  def deep_key_count(**options)
+    sum do |v|
+      case v
+      when Hash, Array
+        v.deep_key_count
+      else
+        1
+      end
+    end
+  end
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coaster (1.4.27)
+    coaster (1.4.28)
       activesupport (>= 7.0.7)
       attr_extras (~> 5.2)
       i18n (>= 1.0)
