@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'minitest/autorun'
+require 'coaster/core_ext/deep_key_count'
 
 module Coaster
   class TestDeepKeyCount < Minitest::Test
