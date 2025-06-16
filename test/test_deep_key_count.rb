@@ -25,9 +25,10 @@ module Coaster
 
       assert_equal 2, [1, 2].deep_key_count(array_is_element: true)
       assert_equal 2, [1, {b: 2}].deep_key_count(array_is_element: true)
-      assert_equal 3, [1, {b: 2, c: [1, 2]}].deep_key_count(array_is_element: true)
 
       assert_equal 3, [1, {b: 2}, 3].deep_key_count(array_is_element: true)
+      
+      assert_equal 3, [1, {b: 2, c: [1, 2]}].deep_key_count(array_is_element: true)
       assert_equal 3, [1, {b: 2}, [3, 4]].deep_key_count(array_is_element: true)
     end
   end

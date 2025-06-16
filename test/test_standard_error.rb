@@ -211,25 +211,24 @@ module Coaster
       detail_front = <<-LOG
 [Coaster::TestStandardError::ExampleError] status:20
   MESSAGE: Test example error (Coaster::TestStandardError::ExampleError) cause{Test sample error (Coaster::TestStandardError::SampleError)}
-  @attributes: {\"frog\"=>\"rams\", \"wat\"=>\"cha\"}
+  @attributes: {\"frog\" => \"rams\", \"wat\" => \"cha\"}
   @coaster: true
   @digest_backtrace: #{e.digest_backtrace}
   @digest_message: a8c7c1
   @fingerprint: ["a8c7c1"]
-  @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\"=>1}]
-  @ins_varr: {\"dd\"=>true}
+  @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\" => 1}]
+  @ins_varr: {\"dd\" => true}
   @level: \"error\"
   @raven: {}
   @tags: {}
   @tkey: nil
   BACKTRACE:
-    #{__FILE__}:193:in `rescue in test_to_detail'
-    #{__FILE__}:187:in `test_to_detail'
+    #{__FILE__}:193:in 'Coaster::TestStandardError#test_to_detail'
 LOG
       detail_cause_front = <<-LOG
 CAUSE: [Coaster::TestStandardError::SampleError] status:10
     MESSAGE: Test sample error (Coaster::TestStandardError::SampleError)
-    @attributes: {"frog"=>"rams"}
+    @attributes: {"frog" => "rams"}
     @coaster: true
     @digest_backtrace: #{e.cause.digest_backtrace}
     @digest_message: cbe233
@@ -239,7 +238,7 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     @tags: {}
     @tkey: nil
     BACKTRACE:
-      #{__FILE__}:188:in `test_to_detail'
+      #{__FILE__}:188:in 'Coaster::TestStandardError#test_to_detail'
 LOG
       assert detail.start_with?(detail_front)
       cause_ix = (detail =~ /CAUSE/)
@@ -331,7 +330,7 @@ LOG
       assert_equal 999999, e.to_hash['status']
       assert_equal 500, e.to_hash['http_status']
       assert_equal "standard error translation (#{e.digest_message} #{bt})", e.user_message
-      assert_match(/undefined local variable or method `aa'/, e.to_hash['message'])
+      assert_match(/undefined local variable or method 'aa'/, e.to_hash['message'])
     end
 
     def test_descriptions
