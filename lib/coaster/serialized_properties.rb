@@ -3,6 +3,33 @@ module Coaster
     class DuplicatedProperty < StandardError; end
     class InvalidProperty < StandardError; end
 
+    def self.extended(base)
+      base.class_eval do
+        def sprop_changes = self.class.serialized_property_changes(changes)
+        def sprop_change(key) = sprop_changes[key.to_s]
+        def sprop_changed?(key) = sprop_change(key).present?
+        def sprop_was(key) = (ch = sprop_change(key)).present? ? ch[0] : nil
+        
+        def sprop_saved_changes = self.class.serialized_property_changes(saved_changes)
+        def sprop_saved_change(key) = sprop_saved_changes[key.to_s]
+
+        def sprop_previous_changes = self.class.serialized_property_changes(previous_changes)
+        def sprop_previous_change(key) = sprop_previous_changes[key.to_s] 
+        def sprop_previously_changed?(key) = sprop_previous_change(key).present?
+        def sprop_previously_was(key) = (ch = sprop_previous_change(key)).present? ? ch[0] : nil
+      end
+    end
+
+    def serialized_property_changes(changes)
+      serialized_property_settings.each_with_object({}) do |(key, prop), result|
+        prop_ch = changes[prop[:column].to_s]
+        next if prop_ch.blank?
+        before = prop_ch[0] && prop_ch[0][key.to_s]
+        after = prop_ch[1] && prop_ch[1][key.to_s]
+        result[key.to_s] = [before, after] if before != after
+      end
+    end
+
     def serialized_property_settings
       @serialized_property_settings ||= {}
     end
@@ -27,7 +54,7 @@ module Coaster
 
     def serialized_property(serialize_column, key, type: nil, comment: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
       raise DuplicatedProperty, "#{self.name}##{key} duplicated\n#{caller[0..5].join("\n")}" if serialized_property_settings[key.to_sym]
-      serialized_property_settings[key.to_sym] = {type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer}
+      serialized_property_settings[key.to_sym] = {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer}
       _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer)
     end
 
@@ -118,6 +145,7 @@ module Coaster
           elsif type.respond_to?(:serialized_property_serializer) && (serializer = type.serialized_property_serializer)
             _define_serialized_property(serialize_column, key, getter: serializer[:getter], setter: serializer[:setter], setter_callback: serializer[:setter_callback], default: default)
           elsif (type.is_a?(Symbol) && (t = type.to_s.constantize rescue nil)) || (type.is_a?(Class) && type < ActiveRecord::Base && (t = type))
+            serialized_property_settings["#{key}_id".to_sym] = serialized_property_settings.delete(key.to_sym) # rename key from setting
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
             define_method key.to_sym do
@@ -217,6 +245,25 @@ module Coaster
         define_method "#{key}=".to_sym do |val|
           send("#{key}_without_callback=".to_sym, val)
         end
+      end
+
+      define_method "#{key}_change".to_sym do
+        send("sprop_change", key)
+      end
+      define_method "#{key}_changed?".to_sym do
+        send("sprop_changed?", key)
+      end
+      define_method "#{key}_was".to_sym do
+        send("sprop_was", key)
+      end
+      define_method "#{key}_previous_change".to_sym do
+        send("sprop_previous_change", key)
+      end
+      define_method "#{key}_previously_changed?".to_sym do
+        send("sprop_previously_changed?", key)
+      end
+      define_method "#{key}_previously_was".to_sym do
+        send("sprop_previously_was", key)
       end
     end
   end
