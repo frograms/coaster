@@ -4,6 +4,7 @@ if spec.version >= Gem::Version.new('7.1')
   require 'active_support/deprecation'
   require 'active_support/deprecator'
 end
+require 'active_support/core_ext/object'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/class/attribute_accessors'
