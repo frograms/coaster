@@ -67,7 +67,7 @@ class StandardError
   attr_writer :fingerprint
 
   def initialize(message = nil, cause = $!)
-    @fingerprint = Coaster.default_fingerprint.dup
+    @fingerprint = []
     @tags = {}
     @level = 'error'
     @attributes = HashWithIndifferentAccess.new
@@ -128,7 +128,7 @@ class StandardError
 
   # @return [Array] fingerprint
   def fingerprint
-    (@fingerprint + Coaster.default_fingerprint).flatten.compact.map do |fp|
+    ((@fingerprint || []) + Coaster.default_fingerprint).flatten.compact.map do |fp|
       case fp
       when *%i[digest_message digest_backtrace] then send(fp)
       else fp.to_s
