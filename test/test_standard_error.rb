@@ -407,5 +407,11 @@ LOG
       b = StandardError.new(a)
       assert_equal '#<Abc:0x111>', b.message
     end
+
+    def test_fingerprint
+      Abcdefggg # raise NameError
+    rescue => e
+      assert_equal [e.digest_message, e.digest_backtrace], e.fingerprint
+    end
   end
 end
