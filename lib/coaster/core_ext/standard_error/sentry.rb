@@ -12,17 +12,8 @@ class StandardError
     @raven ||= {}.with_indifferent_access
   end
 
-  def raven_fingerprint
-    (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
-      if fp == true || fp == :class
-        self.class.name
-      elsif fp == :default
-        '{{ default }}'
-      else
-        fp
-      end
-    end.flatten
-  end
+  alias_method :sentry_fingerprint, :fingerprint
+  alias_method :raven_fingerprint, :fingerprint
 
   def notes(options = {})
     opts = options ? options.dup : {}
@@ -36,6 +27,7 @@ class StandardError
     nt[:tags][:digest_backtrace] = digest_backtrace if digest_backtrace.present?
     nt[:level] ||= self.level
     nt[:extra] = attributes.merge(nt[:extra])
+    nt[:fingerprint] = sentry_fingerprint
     nt
   end
 
@@ -47,12 +39,11 @@ class StandardError
       scope.user.merge!(nt[:user] || {})
       scope.tags.merge!(nt[:tags])
       scope.extra.merge!(nt[:extra])
-      scope.set_fingerprint(raven_fingerprint)
+      scope.set_fingerprint(nt[:fingerprint])
     end
   rescue => e
-    msg = "#{e.class.name}: #{e.message}"
-    msg += "\n\t" + e.backtrace.join("\n\t")
-    Sentry.logger.error(msg)
+    Sentry.capture_exception(e)
+    @sentry_event = Sentry.capture_exception(self)
   end
 
   def sentry_event_id

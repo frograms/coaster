@@ -122,13 +122,19 @@ class StandardError
     super(msg)
     @digest_message = self.class.digest_message(msg)
     set_backtrace(message.backtrace) if message.is_a?(Exception)
-    @fingerprint << @digest_message
     @fingerprint.compact!
     self
   end
 
-  # @return [Array, NilClass] fingerprint
-  def fingerprint; @fingerprint.is_a?(Array) && @fingerprint + [digest_backtrace] end
+  # @return [Array] fingerprint
+  def fingerprint
+    (@fingerprint + Coaster.default_fingerprint).flatten.compact.map do |fp|
+      case fp
+      when *%i[digest_message digest_backtrace] then send(fp)
+      else fp.to_s
+      end
+    end.flatten.compact
+  end
   def safe_message; message || '' end
   def digest_message; @digest_message ||= self.class.digest_message(message) end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
@@ -303,10 +309,8 @@ class StandardError
     (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
       if fp == true || fp == :class
         self.class.name
-      elsif fp == :default || fp == '{{ default }}'
-        nil
       else
-        fp
+        fp.to_s
       end
     end.compact
   end

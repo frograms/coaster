@@ -1,6 +1,6 @@
 require 'test_helper'
 require 'minitest/autorun'
-require 'coaster/core_ext/standard_error/raven'
+require 'coaster/core_ext/standard_error/sentry'
 
 StandardError.inspection_value_proc = Proc.new do |val|
   PP.pp(val, ''.dup, 79)[0...-1]
@@ -206,6 +206,7 @@ module Coaster
       assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", ih['cause']['message']
       assert ih['cause']['instance_variables']['@coaster']
       assert_instance_of Array, ih['cause']['backtrace']
+      assert_equal [e.digest_message, e.digest_backtrace], e.sentry_fingerprint
 
       detail = e.to_inspection_s
       detail_front = <<-LOG
@@ -215,7 +216,7 @@ module Coaster
   @coaster: true
   @digest_backtrace: #{e.digest_backtrace}
   @digest_message: a8c7c1
-  @fingerprint: ["a8c7c1"]
+  @fingerprint: []
   @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\" => 1}]
   @ins_varr: {\"dd\" => true}
   @level: \"error\"
@@ -232,7 +233,7 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     @coaster: true
     @digest_backtrace: #{e.cause.digest_backtrace}
     @digest_message: cbe233
-    @fingerprint: ["cbe233"]
+    @fingerprint: []
     @level: "error"
     @raven: {}
     @tags: {}
@@ -240,10 +241,10 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     BACKTRACE:
       #{__FILE__}:188:in 'Coaster::TestStandardError#test_to_detail'
 LOG
-      assert detail.start_with?(detail_front)
+      assert_match(/^#{Regexp.escape(detail_front)}/, detail)
       cause_ix = (detail =~ /CAUSE/)
       cause = detail[cause_ix..-1]
-      assert cause.start_with?(detail_cause_front)
+      assert_match(/^#{Regexp.escape(detail_cause_front)}/, cause)
     end
 
     def test_to_detail_with_depth

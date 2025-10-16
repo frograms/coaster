@@ -1,8 +1,8 @@
 ENV['DEBUG'] = 'true'
 
+require 'debug'
 require 'minitest'
 require 'pry'
-require 'pry-byebug'
 require 'pry-stack_explorer'
 
 require 'rubygems'
@@ -23,3 +23,4 @@ end
 
 Coaster.logger = Logger.new(STDOUT)
 Coaster.logger.level = Logger::WARN
+Coaster.default_fingerprint = %i[digest_message digest_backtrace]

@@ -15,7 +15,7 @@ module Coaster
   mattr_writer   :logger
   mattr_writer   :default_fingerprint
 
-  DEFAULT_FINGERPRINT = [:default, :class].freeze
+  DEFAULT_FINGERPRINT = [].freeze
 
   class << self
     def configure
