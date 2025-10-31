@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    coaster (1.4.32)
+    coaster (1.4.33)
       activesupport (>= 7.0.7)
       attr_extras (~> 5.2)
       i18n (>= 1.0)
@@ -110,6 +110,7 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
+    language_server-protocol (3.17.0.5)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -146,6 +147,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
+    prism (1.6.0)
     pry (0.15.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -198,12 +200,18 @@ GEM
       tsort (>= 0.2)
       zeitwerk (~> 2.6)
     rake (13.3.0)
+    rbs (3.9.5)
+      logger
     rdoc (6.15.0)
       erb
       psych (>= 4.0.0)
       tsort
     reline (0.6.2)
       io-console (~> 0.5)
+    ruby-lsp (0.26.2)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 5)
     ruby2_keywords (0.0.5)
     securerandom (0.4.1)
     shoulda (4.0.0)
@@ -242,6 +250,7 @@ DEPENDENCIES
   pry-doc
   pry-stack_explorer
   rails
+  ruby-lsp
   shoulda
   shoulda-context
   sqlite3
