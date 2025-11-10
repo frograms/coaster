@@ -97,7 +97,7 @@ class StandardError
       msg = hash.delete(:msg) || msg
       msg = hash.delete(:message) || msg
       hash[:description] ||= hash.delete(:desc) if hash[:desc].present?
-      @fingerprint = hash.delete(:fingerprint) || hash.delete(:fingerprints)
+      @fingerprint = Array.wrap(hash.delete(:fingerprint) || hash.delete(:fingerprints)) + @fingerprint
       @tags = hash.delete(:tags) || hash.delete(:tag)
       @level = hash.delete(:level) || hash.delete(:severity) || @level
       @tkey = hash.delete(:tkey)
@@ -128,13 +128,31 @@ class StandardError
 
   # @return [Array] fingerprint
   def fingerprint
-    ((@fingerprint || []) + Coaster.default_fingerprint).flatten.compact.map do |fp|
-      case fp
-      when *%i[digest_message digest_backtrace] then send(fp)
-      else fp.to_s
-      end
-    end.flatten.compact
+    if @fingerprint.instance_variable_get(:@__processed__)
+      @fingerprint
+    else
+      @fingerprint = ((@fingerprint || []) + Coaster.default_fingerprint).flatten.compact.map do |fp|
+        case fp
+        when Symbol then send(fp)
+        when Proc then fp.call(self)
+        when Numeric then fp
+        else fp.to_s
+        end
+      rescue => e
+        @fingerprint_exception = {msg: e.message, bt: e.backtrace ? e.backtrace[0..5] : nil}
+        if fp.is_a?(Proc) & fp.source_location
+          f = fp.source_location[0].split('/').last(3).join('/')
+          "#{f}:#{fp.source_location[1]}"
+        else
+          fp.to_s
+        end
+      end.flatten.compact
+      @fingerprint.instance_variable_set(:@__processed__, true)
+      @fingerprint
+    end
   end
+  alias_method :rails_tag, :fingerprint
+
   def safe_message; message || '' end
   def digest_message; @digest_message ||= self.class.digest_message(message) end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
@@ -304,16 +322,6 @@ class StandardError
     lg << "\n"
   end
   alias_method :to_detail, :to_inspection_s
-
-  def rails_tag
-    (fingerprint || Coaster.default_fingerprint).flatten.map do |fp|
-      if fp == true || fp == :class
-        self.class.name
-      else
-        fp.to_s
-      end
-    end.compact
-  end
 
   def cleaned_backtrace(options = {})
     return unless backtrace

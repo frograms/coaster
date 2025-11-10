@@ -190,12 +190,34 @@ module Coaster
     end
 
     def test_backtrace_to_keep
-      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer')
+      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer', fingerprint: 'aaabbb')
       new_e = StandardError.new(e)
       assert_equal new_e.message, e.message
       assert_equal new_e.description, e.description
       assert_nil new_e.backtrace
       assert_nil e.backtrace
+    end
+
+    def test_fingerprint
+      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer', fingerprint: 'aaabbb')
+      new_e = StandardError.new(e)
+      assert_equal ['aaabbb', e.digest_message], e.fingerprint
+      assert_equal ['aaabbb', e.digest_message, new_e.digest_message], new_e.fingerprint
+    end
+    
+    def test_fingerprint_proc
+      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer', fingerprint: proc{|e| e.status})
+      new_e = StandardError.new(e)
+      assert_equal [999999, e.digest_message], e.fingerprint
+      assert_equal [999999, e.digest_message, new_e.digest_message], new_e.fingerprint
+    end
+
+    def test_fingerprint_exception
+      e = ArgumentError.new(m: 'blahasdf', desc: 'qwer', fingerprint: proc{ raise 'aaaxxx' })
+      new_e = StandardError.new(e)
+      assert_equal ["coaster/test/test_backtrace.rb:216", e.digest_message], e.fingerprint
+      assert_equal ["coaster/test/test_backtrace.rb:216", e.digest_message, new_e.digest_message], new_e.fingerprint
+      assert_equal('aaaxxx', e.instance_variable_get(:@fingerprint_exception)[:msg])
     end
 
     def test_backtrace_to_keep_as_cause

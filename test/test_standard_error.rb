@@ -206,7 +206,7 @@ module Coaster
       assert_equal "Test sample error (Coaster::TestStandardError::SampleError)", ih['cause']['message']
       assert ih['cause']['instance_variables']['@coaster']
       assert_instance_of Array, ih['cause']['backtrace']
-      assert_equal [e.digest_message, e.digest_backtrace], e.sentry_fingerprint
+      assert_equal [e.cause.digest_message, e.cause.digest_backtrace, e.digest_message, e.digest_backtrace], e.sentry_fingerprint
 
       detail = e.to_inspection_s
       detail_front = <<-LOG
@@ -216,7 +216,7 @@ module Coaster
   @coaster: true
   @digest_backtrace: #{e.digest_backtrace}
   @digest_message: a8c7c1
-  @fingerprint: []
+  @fingerprint: #{e.fingerprint.inspect}
   @ins_var: [\"Coaster::TestStandardError::SampleError\", {\"h\" => 1}]
   @ins_varr: {\"dd\" => true}
   @level: \"error\"
@@ -233,7 +233,7 @@ CAUSE: [Coaster::TestStandardError::SampleError] status:10
     @coaster: true
     @digest_backtrace: #{e.cause.digest_backtrace}
     @digest_message: cbe233
-    @fingerprint: []
+    @fingerprint: #{e.cause.fingerprint.inspect}
     @level: "error"
     @raven: {}
     @tags: {}
