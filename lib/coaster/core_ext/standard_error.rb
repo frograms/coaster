@@ -252,14 +252,8 @@ class StandardError
     attributes[:inspection_value_proc] || self.class.inspection_value_proc
   end
 
-  def to_inspection_hash(options: {}, _h: {}.with_indifferent_access, _depth: 0)
-    backtrace_key = options[:backtrace_key] || :backtrace
-    _h.merge!(
-      type: self.class.name, status: status,
-      http_status: http_status, message: message,
-      instance_variables: {}.with_indifferent_access
-    )
-    digest_backtrace # for @digest_backtrace
+  def to_inspection_ivars
+    _h = {instance_variables: {}}.with_indifferent_access
     instance_variables.sort.each do |var|
       if inspection_vars.include?(var)
         val = instance_variable_get(var)
@@ -272,6 +266,18 @@ class StandardError
         _h[:instance_variables][var] = self.class.inspection_value_simple(val)
       end
     end
+    _h
+  end
+
+  def to_inspection_hash(options: {}, _h: {}.with_indifferent_access, _depth: 0)
+    backtrace_key = options[:backtrace_key] || :backtrace
+    _h.merge!(
+      type: self.class.name, status: status,
+      http_status: http_status, message: message,
+      instance_variables: {}.with_indifferent_access
+    )
+    digest_backtrace # for @digest_backtrace
+    _h.merge!(to_inspection_ivars)
     if backtrace.present?
       if respond_to?(:cleaned_backtrace)
         if (bt = cleaned_backtrace(options))

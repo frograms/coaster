@@ -27,6 +27,7 @@ class StandardError
     nt[:tags][:digest_backtrace] = digest_backtrace if digest_backtrace.present?
     nt[:level] ||= self.level
     nt[:extra] = attributes.merge(nt[:extra])
+    nt[:extra][:ivars] = to_inspection_ivars rescue {}
     nt[:fingerprint] = sentry_fingerprint
     nt
   end
