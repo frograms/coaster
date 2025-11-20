@@ -140,7 +140,7 @@ class StandardError
         end
       rescue => e
         @fingerprint_exception = {msg: e.message, bt: e.backtrace ? e.backtrace[0..5] : nil}
-        if fp.is_a?(Proc) & fp.source_location
+        if fp.is_a?(Proc) && fp.source_location
           f = fp.source_location[0].split('/').last(3).join('/')
           "#{f}:#{fp.source_location[1]}"
         else
