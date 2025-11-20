@@ -63,8 +63,8 @@ class StandardError
     end
   end
 
-  attr_accessor :tags, :level, :tkey
-  attr_writer :fingerprint
+  attr_accessor :level, :tkey
+  attr_writer :tags, :fingerprint
 
   def initialize(message = nil, cause = $!)
     @fingerprint = []
@@ -128,7 +128,7 @@ class StandardError
 
   # @return [Array] fingerprint
   def fingerprint
-    if @fingerprint.instance_variable_get(:@__processed__)
+    if @fingerprint&.instance_variable_get(:@__processed__)
       @fingerprint
     else
       @fingerprint = ((@fingerprint || []) + Coaster.default_fingerprint).flatten.compact.map do |fp|
@@ -153,6 +153,7 @@ class StandardError
   end
   alias_method :rails_tag, :fingerprint
 
+  def tags = @tags ||= {}
   def safe_message; message || '' end
   def digest_message; @digest_message ||= self.class.digest_message(message) end
   def digest_backtrace; @digest_backtrace ||= backtrace ? Digest::MD5.hexdigest(cleaned_backtrace.join("\n"))[0...8] : nil end
