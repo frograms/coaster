@@ -8,4 +8,5 @@ gem 'pry-stack_explorer'
 gem 'debug'
 gem 'pry-doc'
 gem 'ruby-lsp'
+gem 'activerecord'
 

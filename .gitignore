@@ -40,3 +40,4 @@ build/
 dump.rdb
 .vscode
 *.code-workspace
+/.claude

@@ -17,6 +17,50 @@ module Coaster
         def sprop_previous_change(key) = sprop_previous_changes[key.to_s] 
         def sprop_previously_changed?(key) = sprop_previous_change(key).present?
         def sprop_previously_was(key) = (ch = sprop_previous_change(key)).present? ? ch[0] : nil
+
+        if defined?(ActiveRecord::Base) && base < ActiveRecord::Base
+          def write_attribute(attr_name, value)
+            if (setting = self.class.serialized_property_setting(attr_name))
+              col = setting[:column]
+              hsh = read_attribute(col) || {}
+              hsh[attr_name.to_s] = value
+              super(col, hsh)
+            else
+              super
+            end
+          end
+
+          def read_attribute(attr_name)
+            if (setting = self.class.serialized_property_setting(attr_name))
+              col = setting[:column]
+              hsh = super(col) || {}
+              hsh[attr_name.to_s]
+            else
+              super
+            end
+          end
+
+          def [](attr_name)
+            if (setting = self.class.serialized_property_setting(attr_name))
+              col = setting[:column]
+              hsh = super(col) || {}
+              hsh[attr_name.to_s]
+            else
+              super
+            end
+          end
+
+          def []=(attr_name, value)
+            if (setting = self.class.serialized_property_setting(attr_name))
+              col = setting[:column]
+              hsh = self[col] || {}
+              hsh[attr_name.to_s] = value
+              super(col, hsh)
+            else
+              super
+            end
+          end
+        end
       end
     end
 
@@ -30,12 +74,38 @@ module Coaster
       end
     end
 
+    def own_serialized_property_settings
+      @own_serialized_property_settings ||= {}
+    end
+
     def serialized_property_settings
-      @serialized_property_settings ||= {}
+      @serialized_property_settings ||= if superclass.respond_to?(:serialized_property_settings)
+        superclass.serialized_property_settings.dup
+      else
+        {}
+      end
     end
 
     def serialized_property_setting(key)
       serialized_property_settings[key.to_sym]
+    end
+
+    def set_serialized_property_setting(key, setting)
+      own_serialized_property_settings[key.to_sym] = setting
+      serialized_property_settings[key.to_sym] = setting
+    end
+
+    def delete_serialized_property_setting(key)
+      own_serialized_property_settings.delete(key.to_sym)
+      serialized_property_settings.delete(key.to_sym)
+    end
+
+    def rename_serialized_property_setting(from_key, to_key)
+      setting = own_serialized_property_settings.delete(from_key.to_sym)
+      own_serialized_property_settings[to_key.to_sym] = setting
+      serialized_property_settings.delete(from_key.to_sym)
+      serialized_property_settings[to_key.to_sym] = setting
+      setting
     end
 
     def serialized_column(serialize_column)
@@ -53,8 +123,8 @@ module Coaster
     end
 
     def serialized_property(serialize_column, key, type: nil, comment: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
-      raise DuplicatedProperty, "#{self.name}##{key} duplicated\n#{caller[0..5].join("\n")}" if serialized_property_settings[key.to_sym]
-      serialized_property_settings[key.to_sym] = {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer}
+      raise DuplicatedProperty, "#{self.name}##{key} duplicated\n#{caller[0..5].join("\n")}" if own_serialized_property_settings[key.to_sym]
+      set_serialized_property_setting(key, {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer})
       _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer)
     end
 
@@ -98,7 +168,7 @@ module Coaster
                 end
               end
               if type
-                serialized_property_setting(key.to_sym)[:type] = type
+                serialized_property_setting(key)[:type] = type
                 _typed_serialized_property serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default
               end
             end
@@ -145,7 +215,7 @@ module Coaster
           elsif type.respond_to?(:serialized_property_serializer) && (serializer = type.serialized_property_serializer)
             _define_serialized_property(serialize_column, key, getter: serializer[:getter], setter: serializer[:setter], setter_callback: serializer[:setter_callback], default: default)
           elsif (type.is_a?(Symbol) && (t = type.to_s.constantize rescue nil)) || (type.is_a?(Class) && type < ActiveRecord::Base && (t = type))
-            serialized_property_settings["#{key}_id".to_sym] = serialized_property_settings.delete(key.to_sym) # rename key from setting
+            rename_serialized_property_setting(key, "#{key}_id")
             _define_serialized_property serialize_column, "#{key}_id", default: default
 
             define_method key.to_sym do
@@ -189,17 +259,22 @@ module Coaster
     end
 
     def _define_serialized_property(serialize_column, key, getter: nil, setter: nil, setter_callback: nil, default: nil)
+      is_active_record = defined?(ActiveRecord::Base) && self < ActiveRecord::Base
       if default
         if getter
           define_method key.to_sym do
             hsh = send(serialize_column.to_sym)
-            hsh[key.to_s] ||= default.dup
+            if hsh[key.to_s].nil?
+              hsh[key.to_s] = default.dup
+            end
             getter.call(hsh[key.to_s])
           end
         else
           define_method key.to_sym do
             hsh = send(serialize_column.to_sym)
-            hsh[key.to_s] ||= default.dup
+            if hsh[key.to_s].nil?
+              hsh[key.to_s] = default.dup
+            end
             hsh[key.to_s]
           end
         end
@@ -219,6 +294,7 @@ module Coaster
 
       if setter
         define_method "#{key}_without_callback=".to_sym do |val|
+          send("#{serialize_column}_will_change!") if is_active_record
           if val.nil?
             send(serialize_column.to_sym).delete(key.to_s)
           else
@@ -228,6 +304,7 @@ module Coaster
         end
       else
         define_method "#{key}_without_callback=".to_sym do |val|
+          send("#{serialize_column}_will_change!") if is_active_record
           if val.nil?
             send(serialize_column.to_sym).delete(key.to_s)
           else

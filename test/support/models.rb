@@ -6,6 +6,7 @@ class User < ActiveRecord::Base
   extend Coaster::SerializedProperties
   serialized_column :data
   serialized_property :data, :appendix, default: {}
+  serialized_property :data, :simple
   serialized_property :data, :father, type: :User
   serialized_property :data, :mother, type: self
 
@@ -13,4 +14,9 @@ class User < ActiveRecord::Base
     appendix['test_key1'] ||= 0
     appendix['test_key2'] ||= 0
   end
+end
+
+class Student < User
+  serialized_property :data, :grade
+  serialized_property :data, :scores, default: {}
 end
