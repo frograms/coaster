@@ -199,5 +199,178 @@ module Coaster
       assert own_settings[:grade], 'should include own grade'
       assert own_settings[:scores], 'should include own scores'
     end
+
+    def test_getter_transforms_on_read
+      student = Student.create(name: 'test_getter')
+
+      # Set raw value via write_attribute (bypasses setter)
+      student.write_attribute(:score_percentage, 85)
+      assert_equal '85%', student.score_percentage
+
+      # Verify raw value in data
+      assert_equal 85, student.data['score_percentage']
+
+      # Persistence
+      student.save!
+      student.reload
+      assert_equal '85%', student.score_percentage
+    end
+
+    def test_setter_transforms_on_write
+      student = Student.create(name: 'test_setter')
+
+      # Set via setter - should transform to uppercase
+      student.uppercase_name = 'john doe'
+      assert_equal 'JOHN DOE', student.uppercase_name
+      assert_equal 'JOHN DOE', student.data['uppercase_name']
+
+      # Persistence
+      student.save!
+      student.reload
+      assert_equal 'JOHN DOE', student.uppercase_name
+    end
+
+    def test_write_attribute_bypasses_setter
+      student = Student.create(name: 'test_write_attr')
+
+      # write_attribute should NOT apply setter transformation
+      student.write_attribute(:uppercase_name, 'lowercase')
+      assert_equal 'lowercase', student.uppercase_name
+      assert_equal 'lowercase', student.data['uppercase_name']
+
+      # But setter should apply transformation
+      student.uppercase_name = 'another value'
+      assert_equal 'ANOTHER VALUE', student.uppercase_name
+    end
+
+    def test_getter_and_setter_together
+      student = Student.create(name: 'test_both')
+
+      # Set value - setter encodes to Base64
+      student.encrypted_value = 'secret data'
+
+      # Raw value should be Base64 encoded
+      raw_value = student.data['encrypted_value']
+      assert_equal 'c2VjcmV0IGRhdGE=', raw_value
+
+      # Getter should decode
+      assert_equal 'secret data', student.encrypted_value
+
+      # Persistence
+      student.save!
+      student.reload
+      assert_equal 'secret data', student.encrypted_value
+      assert_equal 'c2VjcmV0IGRhdGE=', student.data['encrypted_value']
+    end
+
+    def test_time_type_property
+      Time.zone = 'UTC'
+      student = Student.create(name: 'test_time')
+      time = Time.zone.parse('2024-06-15 10:30:00 UTC')
+
+      # Use the _without_callback= method which applies setter via _define_serialized_property
+      student.enrolled_at_without_callback = time
+
+      # Raw value should be ISO8601 string (setter transforms Time to string)
+      raw_value = student.data['enrolled_at']
+      assert raw_value.is_a?(String), "Expected String but got #{raw_value.class}"
+      assert raw_value.include?('2024-06-15')
+
+      # getter transforms string back to Time
+      assert_equal time.to_i, student.enrolled_at.to_i
+
+      # Persistence
+      student.save!
+      student.reload
+      assert_equal time.to_i, student.enrolled_at.to_i
+    end
+
+    def test_unix_epoch_type_property
+      Time.zone = 'UTC'
+      student = Student.create(name: 'test_unix')
+      time = Time.zone.parse('2024-06-15 10:30:00 UTC')
+
+      # Use the _without_callback= method which applies setter
+      student.graduated_at = time
+
+      # Raw value should be integer timestamp (setter transforms Time to integer)
+      raw_value = student.data['graduated_at']
+      assert raw_value.is_a?(Integer), "Expected Integer but got #{raw_value.class}"
+      assert_equal time.to_i, raw_value
+
+      # getter transforms integer back to Time
+      assert_equal time.to_i, student.graduated_at.to_i
+
+      # Persistence
+      student.save!
+      student.reload
+      assert_equal time.to_i, student.graduated_at.to_i
+    end
+
+    def test_time_type_with_direct_data_assignment
+      Time.zone = 'UTC'
+      student = Student.create(name: 'test_time_direct')
+
+      student.enrolled_at = Time.parse('2024-01-01T00:00:00.000000Z')
+      assert '2024-01-01T00:00:00.000000Z', student.data['enrolled_at']
+      student.graduated_at = Time.parse('2028-01-01T00:00:00.000000Z')
+      assert Time.parse('2028-01-01T00:00:00.000000Z').to_i, student.data['graduated_at']
+
+      # getter transforms string to Time
+      assert student.enrolled_at.is_a?(ActiveSupport::TimeWithZone)
+      assert_equal 2024, student.enrolled_at.year
+
+      teacher = User.create(name: 'Dr john')
+      student.teacher = teacher
+      student.save
+      student = User.find(student.id)
+      assert teacher.id, student.data['teacher_id']
+      assert User, student.teacher.class
+      assert teacher.id, student.teacher.id
+    end
+
+    def test_read_attribute_applies_getter
+      student = Student.create(name: 'test_read_getter')
+
+      # Set raw value directly in data
+      student.data['score_percentage'] = 85
+
+      # read_attribute should apply getter (adds %)
+      assert_equal '85%', student.read_attribute(:score_percentage)
+
+      # Same with [] accessor
+      assert_equal '85%', student[:score_percentage]
+    end
+
+    def test_read_attribute_with_time_type
+      Time.zone = 'UTC'
+      student = Student.create(name: 'test_read_time')
+
+      # Set ISO8601 string directly
+      student.data['enrolled_at'] = '2024-06-15T10:30:00.000000Z'
+
+      # Note: type: Time creates getter in _define_serialized_property,
+      # but it's not stored in settings, so read_attribute returns raw value
+      # The property accessor (enrolled_at) applies the getter
+      result = student.read_attribute(:enrolled_at)
+      assert result.is_a?(String), "read_attribute returns raw value for type: Time"
+
+      # Property accessor applies getter
+      result2 = student.enrolled_at
+      assert result2.is_a?(ActiveSupport::TimeWithZone)
+      assert_equal 2024, result2.year
+    end
+
+    def test_nil_value_with_getter_setter
+      student = Student.create(name: 'test_nil')
+
+      # Set then clear
+      student.encrypted_value = 'some value'
+      assert_equal 'some value', student.encrypted_value
+
+      student.encrypted_value = nil
+      assert_nil student.encrypted_value
+      assert_nil student.data['encrypted_value']
+    end
   end
 end

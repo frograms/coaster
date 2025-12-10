@@ -19,12 +19,28 @@ module Coaster
         def sprop_previously_was(key) = (ch = sprop_previous_change(key)).present? ? ch[0] : nil
 
         if defined?(ActiveRecord::Base) && base < ActiveRecord::Base
+          # Internal method to write serialized property value
+          # @param key [String, Symbol] property key
+          # @param value [Object] value to write
+          # @param apply_setter [Boolean] whether to apply setter proc
+          def _write_sprop_value(key, value, apply_setter: true)
+            setting = self.class.serialized_property_setting(key)
+            return unless setting
+            col = setting[:column]
+            send("#{col}_will_change!")
+            hsh = send(col)
+            if value.nil?
+              hsh.delete(key.to_s)
+            else
+              value = setting[:setter].call(value) if apply_setter && setting[:setter]
+              hsh[key.to_s] = value
+            end
+            value
+          end
+
           def write_attribute(attr_name, value)
-            if (setting = self.class.serialized_property_setting(attr_name))
-              col = setting[:column]
-              hsh = read_attribute(col) || {}
-              hsh[attr_name.to_s] = value
-              super(col, hsh)
+            if self.class.serialized_property_setting(attr_name)
+              _write_sprop_value(attr_name, value, apply_setter: false)
             else
               super
             end
@@ -34,7 +50,9 @@ module Coaster
             if (setting = self.class.serialized_property_setting(attr_name))
               col = setting[:column]
               hsh = super(col) || {}
-              hsh[attr_name.to_s]
+              val = hsh[attr_name.to_s]
+              val = setting[:getter].call(val) if setting[:getter]
+              val
             else
               super
             end
@@ -44,18 +62,17 @@ module Coaster
             if (setting = self.class.serialized_property_setting(attr_name))
               col = setting[:column]
               hsh = super(col) || {}
-              hsh[attr_name.to_s]
+              val = hsh[attr_name.to_s]
+              val = setting[:getter].call(val) if setting[:getter]
+              val
             else
               super
             end
           end
 
           def []=(attr_name, value)
-            if (setting = self.class.serialized_property_setting(attr_name))
-              col = setting[:column]
-              hsh = self[col] || {}
-              hsh[attr_name.to_s] = value
-              super(col, hsh)
+            if self.class.serialized_property_setting(attr_name)
+              _write_sprop_value(attr_name, value, apply_setter: false)
             else
               super
             end
@@ -96,7 +113,7 @@ module Coaster
     end
 
     def delete_serialized_property_setting(key)
-      own_serialized_property_settings.delete(key.to_sym)
+    own_serialized_property_settings.delete(key.to_sym)
       serialized_property_settings.delete(key.to_sym)
     end
 
@@ -292,22 +309,25 @@ module Coaster
         end
       end
 
-      if setter
+      if is_active_record
         define_method "#{key}_without_callback=".to_sym do |val|
-          send("#{serialize_column}_will_change!") if is_active_record
+          col = serialize_column
+          send("#{col}_will_change!")
+          hsh = send(col)
+          if val.nil?
+            hsh.delete(key.to_s)
+          else
+            val = setter.call(val) if setter
+            hsh[key.to_s] = val
+          end
+          val
+        end
+      else
+        define_method "#{key}_without_callback=".to_sym do |val|
           if val.nil?
             send(serialize_column.to_sym).delete(key.to_s)
           else
             val = setter.call(val) if setter
-            send(serialize_column.to_sym)[key.to_s] = val
-          end
-        end
-      else
-        define_method "#{key}_without_callback=".to_sym do |val|
-          send("#{serialize_column}_will_change!") if is_active_record
-          if val.nil?
-            send(serialize_column.to_sym).delete(key.to_s)
-          else
             send(serialize_column.to_sym)[key.to_s] = val
           end
         end

@@ -41,3 +41,5 @@ dump.rdb
 .vscode
 *.code-workspace
 /.claude
+/log/*
+!/log/.keep
