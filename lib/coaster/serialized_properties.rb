@@ -27,7 +27,6 @@ module Coaster
             setting = self.class.serialized_property_setting(key)
             return unless setting
             col = setting[:column]
-            send("#{col}_will_change!")
             hsh = send(col)
             if value.nil?
               hsh.delete(key.to_s)
@@ -312,7 +311,6 @@ module Coaster
       if is_active_record
         define_method "#{key}_without_callback=".to_sym do |val|
           col = serialize_column
-          send("#{col}_will_change!")
           hsh = send(col)
           if val.nil?
             hsh.delete(key.to_s)
