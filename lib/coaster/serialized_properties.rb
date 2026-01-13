@@ -28,13 +28,25 @@ module Coaster
             return unless setting
             col = setting[:column]
             hsh = send(col)
-            if value.nil?
+            old_value = hsh[key.to_s]
+
+            new_value = if value.nil?
+              nil
+            else
+              apply_setter && setting[:setter] ? setting[:setter].call(value) : value
+            end
+
+            # Skip dirty marking if value hasn't changed
+            return old_value if old_value == new_value
+
+            send("#{col}_will_change!")
+
+            if new_value.nil?
               hsh.delete(key.to_s)
             else
-              value = setting[:setter].call(value) if apply_setter && setting[:setter]
-              hsh[key.to_s] = value
+              hsh[key.to_s] = new_value
             end
-            value
+            new_value
           end
 
           def write_attribute(attr_name, value)
@@ -312,13 +324,25 @@ module Coaster
         define_method "#{key}_without_callback=".to_sym do |val|
           col = serialize_column
           hsh = send(col)
-          if val.nil?
+          old_value = hsh[key.to_s]
+
+          new_value = if val.nil?
+            nil
+          else
+            setter ? setter.call(val) : val
+          end
+
+          # Skip dirty marking if value hasn't changed
+          return old_value if old_value == new_value
+
+          send("#{col}_will_change!")
+
+          if new_value.nil?
             hsh.delete(key.to_s)
           else
-            val = setter.call(val) if setter
-            hsh[key.to_s] = val
+            hsh[key.to_s] = new_value
           end
-          val
+          new_value
         end
       else
         define_method "#{key}_without_callback=".to_sym do |val|
