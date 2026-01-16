@@ -50,9 +50,15 @@ class Object
           when Symbol then return self.send(options[:fallback])
           when String then return options[:fallback]
           end
-          if Coaster.logger 
-            Coaster.logger.info(options[:original_missing])
-            Coaster.logger.debug(caller.join("\n"))
+          if Coaster.logger
+            message = options[:original_missing]&.to_s&.strip
+            if Coaster.logger.debug?
+              backtrace = caller.lazy.reject{|line| line.include?('coaster')}.first(5)
+              message = [message, "    Backtrace:"] + backtrace.map{|line| "    #{line}"}
+              Coaster.logger.debug(message.join("\n"))
+            else
+              Coaster.logger.info(message)
+            end
           end
           throw :exception, result if options[:original_throw]
           missing = options[:original_missing] || result
