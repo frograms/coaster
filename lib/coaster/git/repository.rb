@@ -117,11 +117,28 @@ module Coaster
         puts "[DEEP_MERGE] #{path} #{pointer}"
         submodules.values.each do |submodule|
           sm_sha = submodule_sha(submodule.path, pointer: pointer)
-          submodule.merge(sm_sha) if sm_sha.present?
+          next unless sm_sha.present?
+          unless submodule.commit_exists?(sm_sha)
+            raise "서브모듈에 커밋이 존재하지 않습니다!\n" \
+                  "  서브모듈: #{submodule.path}\n" \
+                  "  필요한 커밋: #{sm_sha}\n" \
+                  "  참조한 태그: #{pointer}\n" \
+                  "  해당 커밋이 force-push 등으로 서브모듈 히스토리에서 제거된 것으로 보입니다.\n" \
+                  "  해결: 아래 명령어로 오래된 deploy 태그를 삭제한 뒤 빌드를 재실행하세요.\n" \
+                  "    git tag -d #{pointer}\n" \
+                  "    git push origin :refs/tags/#{pointer}"
+          end
+          submodule.merge(sm_sha)
         end
         merge_without_submodules do
           merge(pointer) if pointer.present?
         end
+      end
+
+      def commit_exists?(sha)
+        run_git_cmd("cat-file -t #{sha}").strip == 'commit'
+      rescue
+        false
       end
 
       def pointers(sha)
