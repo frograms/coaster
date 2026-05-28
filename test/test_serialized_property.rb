@@ -11,7 +11,7 @@ module Coaster
 
     def test_serialized
       user = User.create(name: 'abc')
-      assert_equal([:appendix, :simple, :father_id, :mother_id], User.serialized_property_settings.keys)
+      assert_equal([:appendix, :simple, :tags, :father_id, :mother_id], User.serialized_property_settings.keys)
       user.init_appendix
       assert_equal 0, user.appendix['test_key1']
       assert_equal 0, user.appendix['test_key2']

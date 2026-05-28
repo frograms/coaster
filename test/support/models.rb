@@ -7,6 +7,7 @@ class User < ActiveRecord::Base
   serialized_column :data
   serialized_property :data, :appendix, default: {}
   serialized_property :data, :simple
+  serialized_property :data, :tags, type: Array
   serialized_property :data, :father, type: :User
   serialized_property :data, :mother, type: self
 

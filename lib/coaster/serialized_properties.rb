@@ -76,6 +76,33 @@ module Coaster
               super
             end
           end
+
+          # Readers lazily seed a `default.dup` into the serialize column (see
+          # _define_serialized_property). That makes in-place mutation work
+          # (`record.foo << x`) but also means a pure read like
+          # `record.foo.blank?` writes the default into the column. To keep
+          # that write invisible at persistence time, strip any serialized
+          # property whose value equals its default right before save.
+          #
+          # Only columns that are actually about to be saved are touched, so a
+          # bare load + save of an untouched record stays a no-op (no spurious
+          # UPDATE), and a read-only access whose sole effect was seeding the
+          # default ends up not dirtying the column at all.
+          def _normalize_serialized_property_defaults!
+            self.class.serialized_property_settings
+                .group_by { |_key, setting| setting[:column] }
+                .each do |col, settings|
+              next unless has_attribute?(col)
+              next unless will_save_change_to_attribute?(col)
+              hsh = send(col)
+              next unless hsh.is_a?(Hash)
+              settings.each do |key, setting|
+                default = setting[:default]
+                next unless default
+                hsh.delete(key.to_s) if hsh[key.to_s] == default
+              end
+            end
+          end
         end
       end
     end
@@ -140,8 +167,25 @@ module Coaster
 
     def serialized_property(serialize_column, key, type: nil, comment: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
       raise DuplicatedProperty, "#{self.name}##{key} duplicated\n#{caller[0..5].join("\n")}" if own_serialized_property_settings[key.to_sym]
-      set_serialized_property_setting(key, {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer})
+      # `type: Array` without an explicit default still reads as `[]` (see the
+      # Array branch in _typed_serialized_property). Store that effective
+      # default so the seed hook materializes it too.
+      stored_default = (type == Array && default.nil?) ? [] : default
+      set_serialized_property_setting(key, {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: stored_default, rescuer: rescuer})
+      _register_serialized_property_normalize_hook! if stored_default
       _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer)
+    end
+
+    # Register the before_save normalize callback once per AR class. It strips
+    # serialized properties whose value equals their default so that a reader's
+    # lazy default-seed never reaches the database (see
+    # _normalize_serialized_property_defaults!). Non-AR hosts have no save
+    # lifecycle and keep the raw lazy-seed reader behaviour.
+    def _register_serialized_property_normalize_hook!
+      return unless defined?(ActiveRecord::Base) && self < ActiveRecord::Base
+      return if instance_variable_defined?(:@_coaster_sprop_normalize_hook) && @_coaster_sprop_normalize_hook
+      @_coaster_sprop_normalize_hook = true
+      before_save :_normalize_serialized_property_defaults!
     end
 
     def serialized_properties(serialize_column, *keys, type: nil, getter: nil, setter: nil, setter_callback: nil, default: nil, rescuer: nil)
