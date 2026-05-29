@@ -98,7 +98,7 @@ module Coaster
               next unless hsh.is_a?(Hash)
               settings.each do |key, setting|
                 default = setting[:default]
-                next unless default
+                next if default.nil?
                 hsh.delete(key.to_s) if hsh[key.to_s] == default
               end
             end
@@ -172,7 +172,7 @@ module Coaster
       # default so the seed hook materializes it too.
       stored_default = (type == Array && default.nil?) ? [] : default
       set_serialized_property_setting(key, {column: serialize_column.to_sym, type: type, comment: comment, getter: getter, setter: setter, setter_callback: setter_callback, default: stored_default, rescuer: rescuer})
-      _register_serialized_property_normalize_hook! if stored_default
+      _register_serialized_property_normalize_hook! unless stored_default.nil?
       _typed_serialized_property(serialize_column, key, type: type, getter: getter, setter: setter, setter_callback: setter_callback, default: default, rescuer: rescuer)
     end
 
@@ -320,7 +320,10 @@ module Coaster
 
     def _define_serialized_property(serialize_column, key, getter: nil, setter: nil, setter_callback: nil, default: nil)
       is_active_record = defined?(ActiveRecord::Base) && self < ActiveRecord::Base
-      if default
+      # `default: false` is a real default; only `nil` means "no default". Using
+      # `if default` would route falsey defaults into the no-default reader, so
+      # an unset property would read as nil instead of false.
+      unless default.nil?
         if getter
           define_method key.to_sym do
             hsh = send(serialize_column.to_sym)
